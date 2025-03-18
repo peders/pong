@@ -1,0 +1,27 @@
+* {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+body {
+    background: black;
+    color: white;
+}
+
+a {
+    text-decoration: underline;
+    color: white;
+}
+
+a:hover {
+    color: yellow;
+}
+
+h1 {
+    font-weight: normal;
+    font-size: 2em;
+}
+
+#main {
+    width: 100em;
+    margin: 10em auto;
+}
