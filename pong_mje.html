@@ -1,0 +1,1065 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Tommyball</title>
+        <meta charset="UTF-8" />
+        <style>
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+            }
+
+            body {
+                background: black;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            h1 {
+                color: white;
+            }
+            #countdown {
+                color: white;
+                font-size: 24px;
+                margin-top: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <h1
+                style="
+                    font-family:
+                        Comic Sans MS,
+                        Comic Sans;
+                "
+            >
+                TOMMYBALL
+            </h1>
+            <h2 style="color: white; text-align: center;" id="scoreboard">🏆 0 / 0 🏆</h2>
+        </div>
+        <canvas width="750" height="585" id="game"></canvas>
+        <div id="countdown"></div>
+        <script>
+            const pingSoundString = "UklGRlgMAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTQMAAB/gH9/f39/f39/f4B/\n" +
+                "f39/gICAgICAgICAgICAgICAgICAf3+AgICAgICAf4CAf3+AgH9/f39/f39/f39/f39/f39/fn9/\n" +
+                "f35/f39/f4B/f39/f4CAf3+AgH9/gICAf3+AgH9/f39/f3+AgH9/gIB/gH+Af4CAgX6Af4CAfn5/\n" +
+                "gHtlY6ifenuHjnd8e4B2gpF7cYGKdnaGi3p0f4SEfIGCcXiKknZnf4uIenuDf36AgX5+goF+fIKE\n" +
+                "f39+gIGAf32DgH9+gIB/hH98e36AgIKEgHx8gIGAf3x+f3+Bf4GCfHx+gYKCgH59fX6Cgn5/foGC\n" +
+                "gX18foGCgX99foCAf3+AfoCBgYZ7cnuGiYB5eoCHgXx+gYB9fYGCgH6AfXp9gYaAd3mDh4F+gHt8\n" +
+                "gISCfHx+gYF/fX6BhIJ9en6ChIGAgH5/fn6AgoB+gIODgHx8foGAfn+BgX99fYF/fX+Bgn19gIB/\n" +
+                "foCAfX6AgH99f4CCfX2CgoB9f4GAfn2AgoJ/fX+Af3t9gISCfn6Dg357fIGCgn1+g318gIWBenuA\n" +
+                "hYN8fX9+foKEf3t7gISBfXuAgX9/fn98foODf32Af3t+goGAf31/gX+Ag4F8en+BgX99f4GAf4B+\n" +
+                "foCGf3t8gIF+gYKCfn+Af3x/g4J/e3+BgX59g4J9e4CEgX17f4B/f3+Af4B/fH2Bg317goN+fIGB\n" +
+                "fIGFf3p/hX99gYR+en6BhIJ/eXyEhIB6fYCCg358fICEgX17gIKBfn2AgIB+f4CBf36DgXx8f4KA\n" +
+                "fX2Cg4J9e32BgX9+goOAfX6AfXuBhYF7eoGEgn58f39+f4GCfX+BgH97f4CDgX1+gH5+g4N/fH59\n" +
+                "gIN+f4KBfHqAhIN8e4CCgoB9fH+CgX57fYGBgH2CgX1+gYF9foCAgX99f4GBf3p/hYR8eX6AgoSA\n" +
+                "fXyDhH59foB/f4B/foCBf4CAfn+Agn57foGBfn19gICBgn98fYKCgH99foCAfXyAgYB+fn6Bg4F9\n" +
+                "fIGCgH5/gIGAfn+AgoB9fICDgn18foCEgXx7f4OBfn2BgoB8foKBfHyBhIB9fYCCf3x/gYKBfX1/\n" +
+                "goB9foGBfn5/goJ9e36Bgn99foCCfnt9gYSAfn5/f35/gYGAf39/f4CAgX9+f3+AgH99gIOBfH6B\n" +
+                "goJ/fn+AgH+Af31/gYKAfX6AgIB/f4CAfn6AgX5+goGAfX1+f39/gIB+fX2Ag399f4KAfH6CgX9+\n" +
+                "f3+AgX99gIKAfn+AgH+Af4CAf4CAf3+AgIGAf35/gH9+f3+AgH5/f4GAf39/gH5+fn+BgoF9fYCD\n" +
+                "gn18gISCfnt9gIGBfn5/gIB+fn6Cg399fYGCgH1+gIGBf39/fn6Agn99fYGEgH5/gH9+gYF/fn9/\n" +
+                "gICAgH19gIKBe3uAgn99f4CAgYB/f4B/f39/f4CBf36AgIF/fn9/gYGAf35/gYF+f3+BfnyAgoJ+\n" +
+                "fH2Ag4B+f39/f4F/fn6AgH+Af36AgH59foGBf35+f4CAf3+AgH5/gYF/fn5/gYF/fX+CgX9+gIGB\n" +
+                "f31+gIJ/fn+Bgn57foKCfn6AgH9/f3+AgYF/foCAgH5+foCBgX98f39+gIF/fH+DgH5/f359gIF/\n" +
+                "f39/f35/f39/gIF/fn6AgoF/fn+Af3+AgYB+fn+AgoGAfn6BgYB/foCAf3+BgH5+gIF/fn+AgYF+\n" +
+                "fH6Bgn58fYCBf35/fX6BgH99f39/f39/gIB/fX1+gIGBgH+Af35/gICAgH9/f3+AgIB/f3+AgIB/\n" +
+                "fn+Af3+AgYCAf35+f39/gICBf4B/fn9/gICBf35/f4CAf39/f3+BgX9+gIB/fn9/fn9/gYB/fn6A\n" +
+                "f3+BgH19f4CAgH9/f4CAf3+AgH9+gIF+fYCCgH5/gYB9f4KBfn1/gYB+gIKAfX2AgX9/gH9+f39/\n" +
+                "f3+Af39/f3+Af39/gH9/gIB+fn+BgYB/fn+AgH6AgYB/f4CAf35/gICAgIB/f39/gIGAfn6AgH9+\n" +
+                "f39+fn+AgH5/f39+fX+AgYB+foCCf39/gICAgH9/gICAf39/f4CAfoCBgH1+gIB/f39/fn+AgICA\n" +
+                "gH9/f4CBgH5+gYF/fn+Cf31+gYB+fX6Af39/gH9+f39/gH9+foCAf39+f39/f3+Af39/fn+Af35+\n" +
+                "gYF/f39/f4CBgH9/gICAf4CBgH5/gIF/f4CAfn1/gYJ/fX6Af35/gH9/gIGAfX1/gH9/f4CAfn5/\n" +
+                "gH9+f4B/fn9/gYB/foCBgH5+f4CAgH9/f4GAf39/gIGAf3+BgX9+f4B/f4CBgH+AgH9+gIB/f39/\n" +
+                "f39/f39/f3+AgH+AgH+AgH99f4KBf36AgH5/gIF/fn6BgYB/f39/gICAgIB/fX+AgH5+fn+AgH5+\n" +
+                "f4B/f3+AgH5+f39/f4B/fn9/f39/gICAfn5/gIKAfn5/gIB/f3+AgH+AgYB/gIB/f4CCgH9/f4CA\n" +
+                "f3+AgIB/f3+AgH59f4CAf4CAgIB/f3+Af39/fn9/gH5+f39/fn9/fn9+fn6AgH9+fn5/f39/f4B/\n" +
+                "f3+AgYGAgICAf4CAgICAgH9/gYGAf3+AgIB/f4CAf39/gH9+gH9/f4B/f39/f3+Afn9/fn9/f35+\n" +
+                "f39/f39/f4B/fn+AgH9/gIB/f4B/fn+AgH+Af3+Af39/gICAf36AgYF/foCAgH9/gH9/gH+Af39/\n" +
+                "gIB/fn+AgYB+fn9/f4CAf39/f4CAf39+f4B/f3+Af39/f39/gH9/f39/f3+Af39/f39/gH9/f3+A\n" +
+                "gICAgIB/gIGAf39/f4CAf3+AgH9/f39/gIB/f3+AgIB/f4B/f4CAf35/gH59fn9/f39/gH9/f39/\n" +
+                "f4B/f3+AgH+Af3+AgIB/f3+AgIB/fn+AgIB/f3+Af39/f39/gICAf39+f3+AgH9/f39/f4B/f4B/\n" +
+                "f39/gIB+f4CBf35/f4CAf4CAgYB/f35/gIB/gH+AgIB/f3+AgIB/f39/f3+Af39/f39/f39/gH9/\n" +
+                "f39/f39/gIB/f3+Af4B/f3+AgH9/gH9+f4CAf35/gICAf39/f3+Af39/gIB+f4CAf35/gIB/f4CA\n" +
+                "f35/f4CAgIB/f39/f4CAf39/f39/gICAf3+AgIB+f39/f3+Af39+fn9/f39/f39/f39/f4B/f4B/\n" +
+                "f4CAgICAf39/gIB/f39/f3+AgH9/f39/f4CAf3+AgYB/f4GAf3+AgICAgH9/gICAgH9/f4B/gIB/\n" +
+                "f39/f39/f39/f39/fn9/f39/f39+fn9/f39/f35+f4B/f39/f4B/f3+AgIB/gIB/gICAgH+AgYB/\n" +
+                "gICAgH9/gIB/f4CAf4CAf3+Af39/f39/f35/gIB/f39/f3+Af3+AgH9/f3+AgH9/f4B/f39/f39/\n" +
+                "gH9/f4B/f35/f39/f39/gH9/f3+Af39/f39/f39/f39/f39/f39/gIB/f39/f39/f4CAgH9/gIB/\n" +
+                "f4CAgIB/gICAgIB/gICAf3+AgH9/f4CAf39/f3+Af39/gH9/f4CAf39/f3+Af39/f39/f39/f39/\n" +
+                "f39/f39/f3+Af39/f3+AgH9/f4CAgICAgH9/gIB/f3+AgH9/gIB/gIB/f39/f39/f39/f39/f39/\n" +
+                "f3+AgH9/gICAf39/f39/f3+AgH9/gIB/f4CAf39/gIB/f3+Af39/gIB/f3+Af39/f3+Af3+Af39/\n" +
+                "gH9+fn9/gH9/f39/f39/f39/f4CAgIB/f3+AgICAf3+AgH9/f4CAf3+AgH9/f39/f39/f4CAf35/\n" +
+                "f4B/fn9/gH9/f39/f39/gIB/f39/gIB/f39/gICAf4CAgIB/f3+AgICAf3+AgIB/f3+AgH9/f39/\n" +
+                "f3+Af39/f4B/f39/f3+AgH9/f39/f3+Af39/f39/f39/gH9/f3+AgIB/f39/f4CAgH9/gH9/gIB/\n" +
+                "gIB/f39/f39/gIB/f3+AgH9/f39/f39/f4CAf39/gH9/f39/f39/f39/f39/f39/f39/f3+Af39/\n" +
+                "f39/f39/f4CAf39/gIB/f4CAf39/gICAgICAf3+AgH9/f3+AgH9/f39/f39/f3+Af39/gH9/f39/\n" +
+                "f39/f3+AgH9/f4B/f39/f39/f4CAf39/gIB/f39/f3+AgH9/f3+Af39/gIB/fn9/gIB/f3+Af39/\n" +
+                "gICAf39/f3+Af39/f4CAgICAgH9/gIB/f39/f4B/f4CA"
+
+            const cubeEffectString = "UklGRvogAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YdUgAAB/gH+Af4B/gH+Af39+\n" +
+                "fYB/fXt6eXuAhYWDgH58fICFh4SCgYB/g4eIhIB8eXd6foB+fHt6en2DhoSBf318foOGhYOCgH+B\n" +
+                "hoiFgX57eHh9gH98e3p6fIGFhYKAfnx9gYWGg4KBf3+Dh4aCf3x5eHt/gH18e3p6f4SFg4B/fXx/\n" +
+                "hIaEgoGAf4KGh4SAfXp4eX6Afnx7enp9goWEgX9+fH2ChYWDgYB/gISHhYJ+fHl5fIB/fXx7enuA\n" +
+                "hISCgH58fYCFhYOCgH9/goaGg399enh7f4B+fHx6e36ChYOBf318f4OFhIKBgH+BhYaEgX57eXp9\n" +
+                "gH99fHt7fIGEg4F/fnx9gYSFg4GAfn+ChoaCf316eHt+f359fXx7foODgYB/f35/g4OBgICBgYOG\n" +
+                "hYF+fHp6fYGCf3t5eXl9g4eFgX16eXyDiIeFgX18fYKHh4WBfHh3en6AgH9+enl8gIKDgoF/fX6B\n" +
+                "goKCg4KCg4SDgX5+fXx+f357eXp6fYGFhYB9fHx9gYaIhIF+fX6Bh4mGgHt5d3l+goJ/fHl4en+E\n" +
+                "hoSBfnt7foOGhYSCf35/g4SCgn99eXp8fX19fn5+foCAf35/gICBgoKAf4CBgoWHhYB9e3p7foKC\n" +
+                "fXp5eXt+hYeEf318fH+DhoWCf359gISGhYN+enh4e35/f399e3x/g4WFhYF8fIF8eoOEgoaCd3p8\n" +
+                "dXl7dXV9fYCLioaLi4KEgXh7g4GDiX93e3l0enpze4F+g4qEhIqHg4V/eH2Bf4WJgHx+d3N6d3V/\n" +
+                "hIGFh3+DiYOFh3x2e319hoh/gX51dnp4eoSFgoiGfoSIhIeFe3Z8e36GgnyAfHN2eHV8hYSHi4SB\n" +
+                "h4eDh4R7fH58f4R+e4B6dnl2cnmBgoiNhYOGgYKFf3p8fnuDiH5/gnp3eXV1f4SDjoyDhoiCgoF8\n" +
+                "eX5+e4J9eX5+e3x9eHV+f4KMiYWIhX+Agn2BiIKAgHh3e3t8fXlxdX5/iJGMh4aBfH5/fYOGfoGC\n" +
+                "eXqBgH5+dnB2e36KjIaGhX59hYB+g4J/gX15foB8fH92dYCBg4qKhISDfX2BeXuDgIGEgXt9fHd7\n" +
+                "fHZ8gH6DiYaEjIyCgX51en6AhIZ9dnh3dX+CfoJ/e3+EhYmQi3+AenR/hoeJhXp1eXd5gn15fXp5\n" +
+                "gomHioyDf351d4SFgoSCenqAfoGDeXl9e36EhoCEh3+AgXt8gHp9g399goF5f395f4eIh4aAfoWE\n" +
+                "f4aAdnh4eH2Fg3+FeXN6d3mEiYaEhYCAi4iJin13d3d2f4WAgX11d3l6foWFgIOCfYSLhYWFfnyB\n" +
+                "gH+Gg3x/fnd7fXl5f4CBhIF/hIOAg4J8eoB8fIF/foiDhY2Gf3yEh4OCd3F4d3R1e4CIhnl1eX+J\n" +
+                "i4yIio6Eg399hoR2cXF4eXyAe4GEeXp6fo+Rin99fH6Cf36ChIB6d3mBi4aDgnt9e3d5e4ODfXx6\n" +
+                "g46FfHp5foGBfn2Ih4aCeH2BfXl9f4OIh399f35/fXt/iIN3eHV5g4F/enqEhYaEiJONhYF4fYKA\n" +
+                "fXh4dXd1c3yIin96dXaDjYqMjYiIhnx1e4F4eHNpd35/g4eIhIN/eYSOhoaBe4GCeHZ9fICCenR7\n" +
+                "hIaHh4aBg396gHx+hYJ6fISAeXx5fIh7e4B+houKe3h/e3yBeYGNioSAenl+f3p9g317eHd7h4V8\n" +
+                "gXt4hoV+hYqQioZ6cX5+foN2cHh4d3+HiIaEfHeBhIKLi4uMhnZ0dnZ/fXl3en19gn98hYh+gH+A\n" +
+                "iYmGhIaAdnVxdISIgn15fIOHgH+DgoGCe3mAiIeIhXp6eXV1fYSFhX94f4eCgH56fH18eX+HjY6I\n" +
+                "fXh7eX19foaIf3p3eXt+gn9+gX9/hIOLkIqAeHN3fYB/foB9eHd2eoWGhYR8eoOHhI2PioJ1cG96\n" +
+                "f3qCgH9/fHx5foSGhoF9g4eIiYR/f3l0c3V+iIaBfH1/e36Af4iOgnl4foiHgnt/fnV2en2JkYyB\n" +
+                "e3d6gHx9hIJ5enZ4g46Mg394en+DfYSFg35ycHmFiI2JgHt4fH57goF/fXeAhoWHiYN+gn1ycnZ6\n" +
+                "f4CBgoSBg4iGhYWHfnR0d3l/gomNgnp4eH+IjIl+eXN2en6Jj42EfXV3f4mIhHxwbHB4hZeWjYV1\n" +
+                "b3uFh4WBeHNubHaLlJCRiHh3en+Fhn54eG9ygoiHh4J+f4CBgn57en1+goiGg4J9eYCFiIV/dHBz\n" +
+                "b3yPlJGKhH54eIGHhX5za2hwgpWWjIZ8c3V/jJWShXJjYHCEkZmTgXNqbnyMlpSJd2poc4eSmpqD\n" +
+                "aV5mdIWSmIpzbGt3iZihnYdtYmFsgY+QiX1xbHGCkZ2Zi3dqaXCCi4+NfnJnY3uQnZuQgGhganmL\n" +
+                "mZuQeWdhdIeSmpWBbGBhd4yZnJWBbW50hZCNiXpwaWlzhI+QiISDe4GIiYV6dnx9fYOFfHBweI6W\n" +
+                "ko16ZmJqgJWeoIxuXl5wjKOnlnhcU1twk7GvlmtWWmmDorGefVtOUG+buLKRbFRcaomsuJ90UENQ\n" +
+                "dqW6sIphUFNpkbO5nnRQRl6CqbqohlpHU3CSr7SYZ0dTbo+tuaWBWk1aeJaooIJgT2R4kKCmnXtd\n" +
+                "Ym6ClaCVdmFec4CMmqCQdl5gcYGRmpWAcGtydIaanZB5ZmlyeYuXj4Z5bHB2jaafh3NgYWZ6k5uV\n" +
+                "h3ZpaHmSpJ6Cc2NpbXmRmYx8b2hwf4+WlHt6c211gJGdkX5wZ3N6iZKUiHlsZ3B/kZuTgHVveX2A\n" +
+                "kZWFdWZmdIWWmYx3cXR1eYaUmIR2amp6gZCVi395c3J2h5WUhXZxcXWBjI2MfndubnuJlZOEc3R3\n" +
+                "e3+Gj5GBdW9wfYGIjoR7fXd5eX6OlIh5dXl+eYCHi3t4eHV6g5OSgnV4eXx8gouJfHJyeYGIk5OE\n" +
+                "dXt6eXl7i4l6cnV/g4SRjYh6dXd1e4KMi351fH+HhIeNhnpxcnN/gYqKgn5/foCBgIyHd3N1eH56\n" +
+                "h42HgH5/fnp+jol7bHd2d3uGlI5+eH96foCNh3pwd3l3fYmWjH55e3mBf4mEe3V1eHyAh5aPgnN4\n" +
+                "eX58g4Z+cXR7foeJlYt7b3h8fnuFjIR0b3uAh4aTjXpxenp7eIWOfXZ4g4SGho6HfnZ3eHd8gYmC\n" +
+                "fHyChYd/hIqEeXJ1e4B/h4yGfH+ChH1/jod3b3V8fnqLlIl7eH99eXyLiHtydnp7fYyXinx7e3l7\n" +
+                "fY2LfHV2dX6DipaLf3R3ent7h5OGd3J4foOFkJF/cXJ6fXx/i4p3c3yCiIGJkoBxdHd6fHmHjIF3\n" +
+                "d4OHg4GLiHtzdX1/fH6OiHx8goN9eYGMg3h1e3x4eImSh319gX98fIyHeXR7e3Z1f5ePg3t9fXl5\n" +
+                "hpCDdXF5eX+Ej5SEd3N8gH5/iYt5b3B/hoKFk4t3bnWDgHuDj4R1cYCIgn+Gjnxyd36AfHeFi3x6\n" +
+                "fYOEf32IiXt3e4F8d3mKjH55fIOAdn+SiXVxeoF6eYiXinp2eH54fYuQf3NteYGBhI6Tf3RyeYCC\n" +
+                "f42QemtvgYmFg5KKdHB3g4R8gJCEcXCBjYaAhI1/dHR9g4F8hZCBdnWAg3p4hZCBcnaBg3t7i5F8\n" +
+                "dHiCf3l9io59dHiAf35+kI52b3mBfn2Gk4x3bXiDgn6EkYVzb3WCgX+FkIV1cHyGgX+Cjn9ycn2J\n" +
+                "g3+GjoFzcIGGfXiFkH13eIKIfn2Ji390doKDe3qIjHt0d4GDfH+NjX10dH98e3+Njn52dYGFfoGR\n" +
+                "intydYGBfXuNj3p0d4eFeoKNhndydYKBf4GLiXhzeYaBfYCKiHd0eoWCfX6KiXh2eoSBd4COinp0\n" +
+                "eoaBeoGPh3Z1eoZ/eIOOi3h0d4B/e4ePh3d1eYOAeISQiXVyeISBe4KOh3Z1e4SAeYKOh3h0fIWF\n" +
+                "e32Ji3pzeoOBd36NkH13eYKAdn6Pjnx1eIJ9en+OjXp1d3+AeH+NjXxzeIGBdn6PkHx0eH+DeX2P\n" +
+                "j392d4OEeHuJkX91en+DdnWHkIF2d4GFd3WJkYR4dX+Ge3eEj4d0dYKEeXiDj4d2dn6DfHSBkYl2\n" +
+                "c32DfneBkIt4dXuEf3V+j498d3qCf3Z+jo9/eX2CgHZ5jJCBdHmDgnR3i5KCdHeAg3V2h5CGeHd9\n" +
+                "hHp1h5WIdnJ5gn10gpGKenV8gn11g5CLenJ6gn1zfYyOfnR4goJ0e4+Rg3d5goF0eIyRhHR2foF4\n" +
+                "doiQh3l3fIB8doSSinZ0fIF9doSPi3h0en+BeICQjnx0eoOBd3uMkYV2dn+CeXeIkIZ1d3yBfHiF\n" +
+                "kYp4dnuDfnSBjop8dHyDgXh/j4x8cXWAgnh/jpF/cHWBhnp4ipGFdHR+g314hZCHdXR8hH53hZKL\n" +
+                "eXR6g4B4gY6Me3N5gIJ3fIuQgHN3f4J3eoqQhHV1gIV9eIWQh3ZyeoN+d4SPiXl2eoOAdoGPjn1y\n" +
+                "e4N/dXuNkH91eX+Cd3uMkIR1dn2CeXaIkYd3eH6Ce3WFkYt5dHuBfnZ/jo58dHqCfnV9i45+cneC\n" +
+                "hHl3iZOFdnh+g3p0g5GLeHJ9hH1zgZKNe3J5g4F1e4+Sf3J3goN2eIuUhHRzgIV5doaSh3V0fYR8\n" +
+                "c4CTjnhxe4SAdXuPj390d4SCdnmLkYBxdYCFeXWIk4p3cn2Gf3SDko56cXuEg3Z8jpGAcXaAg3d1\n" +
+                "iJSGdHR9hXx1hZOKdXF6hH50fo+QfXJ5hIB0eY2TgXF1gYN4dYiVinZye4V8c4KSj3hyeYKCdHqQ\n" +
+                "koFzdoGCd3eHk4l2c3uFe3SDkY15c3qEgHF8j5KAcHWChHZ4i5SHdHJ9h3xzhZKNeHB6hYB0fpCR\n" +
+                "f3J2goF3eIuThXJxfoZ6dIaSjHlyeoV/cn2PkYBydoKEd3iMkod1cn2FenODko15cHqGgXR9jZKB\n" +
+                "cHOCg3Z4ipSIdHJ/h3xyg5OPe254hYJ1e46RgnN0g4R4d4iSiHZxfIV+dIGSj31veIaEdnmLkoRw\n" +
+                "cn+IfXWEk4t1bnuIhHR7j5F+bXSEhnh3ipOHc29+h3x0gZWQem53hYN1eY2UhHByf4V6dYiSinZv\n" +
+                "e4d/cn2RkX9xdoWGdnWJkod0cH2FfXSBko57b3aEg3V6j5OEcnKBhnl1hpWNdm16h4BzfY+Rf250\n" +
+                "g4Z4domViXRwfoZ8c4GTkXxudoSDdnmKkoZzcn+Ge3SFlI15b3mGgXR7kJODcXOBhXl1iJSKdm57\n" +
+                "h4B0fpGRfW52hYZ4d4mThnJvfIZ9c4KUj3pudoWDdXqOlYNycoCFeXaGlIt3cXqGgXN8kJJ/cHSC\n" +
+                "hXl3iJOJdW98iIBzfpGRfW51g4Z3dYqUhnJwfoZ/dIGSjnpud4SDdnuNkoRycX+GfXaFk415b3qE\n" +
+                "gXZ9kJGBc3WAg3p2iJKHd3F6hX91fpCPf3J3goN4domThnRxfYaAdX+RkH1vdYOEeHiKk4d0cHyG\n" +
+                "fnWAkY99cHeEhXd3ipKHdHB9hX1zgZGOfHB1hIR4eYqShXRyfoV9dIGRjnxwd4ODd3eLk4d1cX6G\n" +
+                "fXR/kJB+cXaDhXd2h5OKdm97hn91fY+QgXJ0goR5d4iSinlweoR/dX6QkYFxdIGEenaGk4l4cXqF\n" +
+                "gXV7jpGCcnSBhXt1g5KMenB3hIR3d4mRhnZxfod/c36Qjn5xdYOGenaFkYp5cHqGg3Z6ipCEc3F/\n" +
+                "h351f5CPfnB0hIZ4doiTindwe4eAc3uPkoFxc4GFfHWDkYx7b3iGhHh5iZKIdm58iIB1fI6RgXBx\n" +
+                "goh8dIKTjnpudoaFeHeIk4l0bXqJhHZ6jZOEcnB/iH51gJGPfW5xhIh8doSSi3dueYiFd3iKk4Vz\n" +
+                "b32JgHV9j5GAb3GCh3x1gpKNem12hoZ4d4iSiHVteYiEd3mMkoRyb3+IfnR+kZB+bnGEh3x1g5KO\n" +
+                "em12hod6d4iTiXRteoiEdniKk4Zxbn6KgHN9kJGBb3CCiX91gZGNfG51hoh6doSRindueYiFd3iI\n" +
+                "kIV1cHyIg3h8jJCCc3J/h393f42Mf3N1goV7d4OQi3xydoSFeXeFj4h5cXqFgnl5iZGGdnF8h4F3\n" +
+                "fIyQgnJxgIh+dX6Ojn5ydIOHe3aBj4x7cHeFhnp3hZCIeHF5hoV5eYqShnVxfYeCeHyLj4JzcX+H\n" +
+                "f3d+jY6AcnOBhn52gJCMfXJ1g4d7doOPintxeIWFeXiHkId3cXqIg3d6iZGFdHB9h4B2fYuPgHFy\n" +
+                "gIZ+dn+Pjn5ydYKHe3aCkI17cHaEhXp4hpGJeXB5hYN4eYqQhnhxe4aCeHuKkIN0cn2HgXh9jI+B\n" +
+                "c3SAh353f46NfnFzgYZ9doKQjHxxdoSGeneFkIl5cXiEhHl5iJKGdXF7hYJ2eoqQhHZyfoeAdn2M\n" +
+                "j4Fzc3+GfneAjo1+cnSAhX53gY+MfHJ2goZ9d4KPintyd4SFeneEj4l5cHiEhHt4hpGHd3J6h4N3\n" +
+                "eImRhnZxfYaBd3uKkIN0c3+Gf3d9jI+AdHV/h392gI2MfnJ2gYV8doGPjX5zd4GEfHeCj4x8cneC\n" +
+                "hHt3go6LfHN4goR7d4KOi3tzeIKDfHmEjol6c3mEhHp3hI+KenN7g4J4eYaPiHl0eoODeHiHj4Z4\n" +
+                "dHqDgXl5ho+GeXV7g4J5eoePh3l0eoOCenmFjod6dHqCgnp5hY+IenR6hIJ5eYWOiHp0e4OCenmF\n" +
+                "joh7dHqCg3t6hI2Je3R4gIJ7eYSOin11d4CCfHqDjYp9dHeBhHx5go2MfXR3gYN8eIGNi350dn+D\n" +
+                "fXiBjIx+dXZ/g355gIuMgHV3foOAeX+KjIN2dX2DgXp8iY2EeHV8goB6fYiNhHh0eoKBe3yHjYd6\n" +
+                "dXuBgXp6ho6IenN5goJ7eoWOinx0eIGDfHiCjIp+dXeAhH54gIyLf3V2f4R+eH6KjYJ3dn6Df3l9\n" +
+                "iI2EeHV8g4B5e4iNhXl0e4OCeXqHjYZ6dHuDgnt5hI6JfHR4gYR9eIKNin11d4CEfnmBjIt/dXZ/\n" +
+                "hH54fYqMgnd0foWAeHyJjYN4dX2EgXl7hoyFenV7g4J8eoOMiHx0eYGCfXqCjYp+dHeAhH55f4uM\n" +
+                "gnZ1fYSAeX2JjYN3dXyDgXp7hoyFenZ7g4F7eoWNh3x1eYGCfHqCjIl9dniAgn16gIqKgHh4foN+\n" +
+                "en6JjIN5d3yCf3p8hoyGenV7gYJ8e4OLiX52eICDfnqAioqAdnd+g4B6fYiMg3h1e4KBe3yGjIZ7\n" +
+                "dnqCgnt6gouJfXZ5gIN+en+JioF4dn2EgXp9h4yFeXV7gYJ8e4SMiHx1eIGDfXmAi4qAd3d/g395\n" +
+                "fYiMhHl1eoKCe3uEi4d9dniBg316gIqKf3Z3f4SAen2Ii4N5dXyDgnt6hI2GfHZ5gYN9eYGKioB3\n" +
+                "d36Df3p9h4uEenZ7goF7e4SLiH13eYCCfnqAiYqCeHd8goF7fIWLh3x2eYGDfXqAioqAd3Z+hH96\n" +
+                "fYeMhXl1e4OCenqDjIl9dneAg314f4mLgXd2foSAeXyHjIZ6dXqCgnt6gYqJf3d3f4R/enyGjIV6\n" +
+                "dnuDgnt5gYuKf3Z3f4R/eHyGi4V6dnuDgnx6g4uJfnZ4gIN9eH6JjIN3dn6EgXp7hIuIfHZ5gYN9\n" +
+                "eX+JioJ4d36Df3p7hIuGfHd7gYF7eYCJioJ5eH6DgHt8hIqGfXd6gIJ9eX6Ii4N5d32DgXp7hIuI\n" +
+                "fXd6gIJ+en+IioJ5eH2CgHt7g4qIfnh6gIF9eX6Ii4R6eHyCgHt7goqIf3h5gIJ+en6GioR7eHyB\n" +
+                "gHt6gomIgHl5f4J+eX2Gi4Z7eHuBgXx6gImKgnl5foJ/eXuEiod+eHp/gH16f4iJhHt4fYCAe3qC\n" +
+                "iYmAeXl/gX56fIWKhn14e4CBfXqAiIqDenh9gYB7fIOJh395en+BfXp9hoqFe3l8gIB8e4CHiIN7\n" +
+                "en2Afnp7gomIgXp5foF/e3yEiYZ+eXuAgX16foeKhXt4fIGBe3mBiYmBeXl/gn56e4SKh395en+B\n" +
+                "fXp9hoqFfnl7f398en+HiYN8en2Afnt8goiHgnx7fX99e32EiYZ/ent+f3x6foaJhX56fH9/e3qA\n" +
+                "h4mEfHp7f397e4GIiIJ8en1/fXt8g4mHgHt6fn98e36GiYV+ent+fnx7gIeIg316fH9+fHyBh4iC\n" +
+                "fHt9f357fYKIh4F7en1/fnx+hIiGf3t7fn98e3+FiIV/e3t9fnx8gIeIg317fX9+fHyBh4eCfHt8\n" +
+                "f318foOIh4F8e31+fHt+hIiGgHt7fX58e3+FiIV/e3t9fnx8f4WIhX97e35+fXyAhoiDfXp8fn99\n" +
+                "fYCGiIN8enx+fnx9goiHgXx7fH9+fH2DiYeBe3p9f318foSIhX96en1/fXx/hYiGf3t6fX99fX+E\n" +
+                "h4R/e3t9f319f4WIhX96e31+fn6AhoiEfnp6fX5+foCGiIR+ent9fn19gYaHg3x6fH5/fX2BhoeD\n" +
+                "fXp7fX59foKHh4J8enx+fn1+g4eGgX17fH5+fX6Dh4aAe3p8fn59foOHhoF8e3x+fn1/g4eGgHt6\n" +
+                "fH5/fn+EiIaAe3p8fn19f4SHhYB7en1+fn1/hIiGgHt6fH5+fX+EiIWAe3p8fn5+f4SIhn97enx/\n" +
+                "fn1/hYiFf3p6fH9+fX+Eh4V/e3p9fn19gIWHhYB7enx+fX1/hIeFgHx6fH5+fX+Eh4WAfHp8fn5+\n" +
+                "f4OIhoF7enx+fn1/g4eHgXx6fH5+fX6Dh4aCfHt8fX19foOHh4J9ent9fX1+goeHg357e319fX6C\n" +
+                "h4eDfnt7fH19fYGFh4V/e3t8fX19gIWHhYB8e31+fXx/g4eGgXx7fH19fH6Dh4aBfXt8fX18foOH\n" +
+                "hoJ9fHx9fHx+goeHg358fH19fH2BhoeEf3x8fX18fYCFh4WAfHx9fXx8f4OHhoJ+fHx9fHx+goeH\n" +
+                "gn58fH18fH2BhoeEf3x8fX18fYCFh4WAfXx8fXx8f4OHhYF+fX19fHx+goaGgn58fX19fH2BhYaD\n" +
+                "gH18fHx8fYCEh4SAfnx8fHx8f4OGhYJ/fXx9fXx9gYWGg4B9fHx8fH6AhIaEgX58fH18fH+DhYWC\n" +
+                "f3x8fXx8foGEhoSAfn18fHx9gISGhYJ+fHx8fHx/goWGg399fHx8fH6BhIaEgX59fXx8fX+DhoWC\n" +
+                "f318fHx8fYGEhoSAfnx8fHx8f4OGhYJ/fXx8fHx+goWFg4B9fHx8fH2AhIaFgX58fHx8fX+ChYaD\n" +
+                "gH18e3x8foGEhoSBfnx8fHx8f4KGhoN/fXx8e3x+gYWGhYF+fHx8fHx/g4aFg399fHx7fH6BhYaF\n" +
+                "gX58fHt8fH+DhoaDf318fHt8foGFhoSBfnx8fHx9f4OGhoJ/fHx8fHx9gYWGhIF+fHx7e3x/hIeG\n" +
+                "g399fHx7fH2BhYeFgX58fHt7fH+DhoaDf318fHt8fYGFh4WCfnx7e3t8f4OGhoOAfnx8e3t9gIWH\n" +
+                "hYJ/fHx8e3x+goaHhIB9fHx7e32AhIaFgn99fHt7fH6ChYaEgX58fHt7fICEhoaDf318e3t7foKF\n" +
+                "h4WCfnx7e3t9f4OGhoSAfXx7e3t9gISGhoJ/fXt7e3x+goWGhIF+fHt8fH1/g4aGg4B9e3t7e32B\n" +
+                "hYeFgn58fHt7fH+DhoaEgH58e3t7fYCEhoaDf318e3t8foGFh4WCfnx7e3t8f4OGh4SAfXx7e3t9\n" +
+                "gISGhoN/fXx7e3x+goWGhYF+fXx7e3x/g4aGhIB+fHt6e32AhIaFg399fHt7fH6ChYaFgX58fHt7\n" +
+                "fH+DhoaEgX58e3p7fYCEhoaDgH17e3t8foGEhoWCf317e3t8foKFhoWBfnx7e3t9f4OGhoOAfnx7\n" +
+                "e3x9gISGhYN/fXx7e3x+gYWGhYJ/fXt7e3x/goaGhYF+fHt7e31/g4aGhIF+fHt7e32Ag4aGg4B+\n" +
+                "fHt6e32BhIaFg4B9e3p6e36BhYaFgn99e3p6fH6ChYaEgX58e3t7fH+DhoaEgX58e3t7fYCDhoWD\n" +
+                "gH59fHt7fYCEhoWDgH58e3p7foGEhoWCf318e3p8foKEhYSCf318e3t8f4KFhYSBf318e3t8f4KF\n" +
+                "hYOBf318e3t9f4OFhYOBf318e3t9f4KFhIOBf318e3t9gIOFhIOBfn18e3x9gIOEhIOAfn17e3x+\n" +
+                "gIOFhIOAfn18e3t9gIOEhIOBf317e3t9gIOEhIOAfn17e3x+gYOEhIKAfn18e3x+gYOEg4KAfn18\n" +
+                "e3x+gYOEhIKAfn17e3x+gYOEhIKAfn18e3x+gYOEhIKAfn17e3x+gYOEg4KAf318e3x/gYOEhIKA\n" +
+                "fn17e3x+gYOEg4KAfn18e3x+gYOEg4KAfn18e3x+gYOEhIKAf318e3x+gYOEhIKBf318e3x+gYOE\n" +
+                "hIOBf318e3x+gIOEhIKBf318e3x+gIOEg4KBf318e3x+gIOEhIOBf318e3x+gIOEhIKBf318e3x+\n" +
+                "gIKEhIOBf358e3x9gIKDhIOBf358e3t9gIKEhIOBf358e3t9f4KEhIOBgH58fHx9f4GDhIOBgH59\n" +
+                "fHx9f4GDg4OCgH59fHx9f4GDg4OCgH99fHx8foGCg4OCgH99fHx8foCCg4OCgX99fHx8foCCg4OC\n" +
+                "gX9+fXx8fYCCg4OCgYB+fXx8fX+Bg4OCgX9+fXx8fX+BgoODgYB/fXx8fX+AgoOCgoB/fn18fX6A\n" +
+                "goKCgoF/fn18fX6AgYKDgoGAfn18fH1/gYKDgoGAf359fH1/gYKCgoKAf359fH1+gIKCgoKAf359\n" +
+                "fX1+gIGCgoKBgH9+fX1+f4CCgoKBgH9+fX1+f4CBgoKBgX9+fn19fn+BgoKCgYB+fn19fn+AgoKC\n" +
+                "gYB/fn19fn+AgYGBgYB/fn5+fn+AgIGBgYB/f35+fn5/gIGBgYGAf39+fn5/gICBgYGAf35+fn5/\n" +
+                "f4CBgYGAgH9+fn5/f4CBgYGAgH9/fn5+f3+AgYGBgIB/fn5+f3+AgYGBgIB/fn5+fn+AgYGBgIB/\n" +
+                "f35+fn+AgIGBgYB/f35+f39/gICBgYCAf39/fn5/gICBgYCAgH9/f39/gICAgICAgH9/f39/f4CA\n" +
+                "gYGAgH9/f35/f4CAgYGAgIB/f35/f3+AgICAgIB/f35+f3+AgICBgIB/f39/f3+AgICAgICAf39/\n" +
+                "f39/gICAgICAf39/f39/gICAgIB/f39/f39/f4CAgICAf39/f39/f4CAgICAf39/f39/f4CAgICA\n" +
+                "gH9/f39/f4CAgICAgIB/f39/f4CAgICAgIB/f39/f3+AgICAgICAf39/f3+AgICAgIB/f39/f3+A\n" +
+                "gICAgIB/f39/f39/gAA="
+
+            const looseEffectString = "UklGRkAPAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRsPAACAf3+Af4B/f4B/gIB/\n" +
+                "f4B/f3+AgH+Af4B/gH9/f39/gH9/f3+Bf4F/gIB/gH9/f3+Af4B+gX6AgH2DfIN8gn+Af32CfoF/\n" +
+                "gH6Af4J8gH9/gIB/gH6Df36BgYR9gX2AgIF/fn2AfIB8gX5/gn2CfIV8g3+CgYGAf4CAf3uAfYF+\n" +
+                "gX9+f4J6gICGgH2Ae4SCg359fX98f3uBfYN/fX6Bg4CAgIeAhXuEeX99fIV/h4SBfn9/eH14hod5\n" +
+                "eGeFjZKHfG55fIWMfYJ5f3+JiIV3e3+EfoB8f3mBhn6Bd4WCg3V4eoqJgnd5gIeGg4R+f259eIJ+\n" +
+                "hX+CgYGLgYV2e3d/gIOEgH98foKDf3t9goODf4B8fX2CgIOCfnt9f3+FgoJ7foB9fn9+fXmChoWD\n" +
+                "fn16hXuAgXyAdX+EiImBd315goN8hXt7foWLiH9+gX57fX2Bd4GAe356ioOFdnl4hY+EfnN9goWJ\n" +
+                "iYiCbW1qeYKJh4qFi4t9hGuSoINeSW2UmKiYWn5tYp2PeHdzZ3+acHeHgoSKe3aMZ4GchmqCjYmZ\n" +
+                "dmlni5+Nblttd32YnZaAcoB/gHt5f4FzfYOLiH10bnZ6kZmLiYSFhHp3a3h4houAeH+Khop7dHSE\n" +
+                "i4B8bHKLi4iRiG97eHRvcHeGoIN6hYKOinpvcoV5f3V0ioB7lY2Bj4qIbm1deo54hIyIgIF5dYt5\n" +
+                "h5l3aXGHg5d7dHB8i4SEc4N6e4ybj392hoh6cGN2eHGHfoSFe4NsfH2OnI2Jg4WHf3Rwe4mKjHRz\n" +
+                "dn6Ol5h5aW95fYF4fYyLeIaMcoN/dm1dboavlHOHdpCMc3Vxiot/d2J6dXeik5KEcXljbnKFoYWL\n" +
+                "hnNrfIqMk319iW9teoKKhn9zeniDkIV7eGt9i5Oci3+BhmxlXniFdoWCkY2HgWtrd4aenZSFZWZo\n" +
+                "dYuZnZFzWVttja6xp3hZUmeEhJWGk4FxeoGDhoN5e3N7gqCKbm91iouDjXx3cm6Ofop1bZiUjHFg\n" +
+                "gXB4k4KIinuMe1hthZN9h4CAenB5gJOEj3xpen9/h46TiIp0bJGZkHJeYWphfp+VjoWCi4mJZ1xo\n" +
+                "dZeYmpR4Wlteg5+tqn5mVWaJqKahhGBOW4iUoI5+fmR2iYeJf35ufoqLmJVxZG+Ci3iAcoWCZ3+O\n" +
+                "kZFpb4GHmIJ9YVx1g4SfkoeMbl5tioqRgnSAaWV+i6eRi3x3eIB6epmTj2tcaJKQkJd0a1pXhoaa\n" +
+                "r5WWdXlpV3KBgpCGeHZzgH99cZGnj4F1aYZ3gpiShnl0bXV9j4SJaXF8ipiGfmZzj4+JlHpva3V9\n" +
+                "f359gpl6b35wkoqEi4CKiWlcUG2HrLOfdVZiXn+dopeCV25zfZWNmH5leH19lZSFhHt1eHt7gIR3\n" +
+                "k4+LhWVvZnCYmqGYdWxbY3mHjIuDbn2GgHx7e42MeouAhnVzfImMg412cnd8e4B0h5WXnH9SUWSG\n" +
+                "sK+hj2NIX2qCoqyNgl9EZHuVvZ+EcGNxgYFwgYGil4Z/XmFyaY6dmJFzcWt3gIqViWiCc3KJlo+N\n" +
+                "g21+YmiKj4mMhIWBeW96e4eFgHp7j5eSfm1ncnmCi6GNeVRZcJWZkIV3c2x+kq+Zk21UYH6Zo4Nj\n" +
+                "aXKFnY12fWNuipCipXhkWlJ5mqiZgG9aeIWaqIZyW1x4jIyOhIF/bXSFho99Ym54hJypn4tnWGNz\n" +
+                "gZCpj3NpY2yPmaGbYl9nc4yio5uGXlJsh5SNe3BrfpuhkIJtZ2JkipukimZdWXaXp6mOc2xwiI2R\n" +
+                "jmtXXXaSnIt/fG5zgoqVlXllZGmZsqOKZ1JjfImKjH97f3F/eYCMjJWJbWNsgpWemIaAX2RpdZeU\n" +
+                "koJ7g4mDg3ttaXCJjoqGbmV8hJuZdXFmZoepraCAUDpSd5+jlI13fHp0foiMkH1vd3+TlId0cn58\n" +
+                "iH1xe3eCh4aFhYOBfntzfIGMl4aBfXmBfGp0dX2SkX1qZWyOmYuAc3B+gYGNj5iNiHtsXmOAhp2b\n" +
+                "in1rXGhsiqqpmHRfYXeRoZJ/Ym1zfJKQhXp/g4l8cXZydIyRk41vZGd+mZZ/c3V9kYuCf3Z6eXmB\n" +
+                "hoR9dGVtfZaloYdmXWiBnKegl3VvZ2x6g4OCgXd7aWd0g4qKgX+LjX15fYqbi4WGeXRucXl/h4OG\n" +
+                "em9gYHiNmp6hkIFpcXeIm5qQbF9fdI2gloFgT2GCoKKQaGJ1hqSei3xbYHiQqKaKcFdpe4WTjYd1\n" +
+                "bmNvepCbmId4a2x5d4KIl5WRhW9hZW9/iZaajHFua32Tk5KAfXyCfH2Bgnp6b3uDenp5gIOFgoZ9\n" +
+                "fHiBiJGOgn17eHuBhIF3d316e3h7g3uGfZOHd3NwiZCWi4V+d3B3fIaEeH2Ci5KDbWFnc4aTm5OA\n" +
+                "cGZ5fZKTiIp6f3lzgH+IjoN8cHV5d39+kI+Igm9xcHWAhoqLhoB7eoOGgX15f4CLgHN0c3h8hYmU\n" +
+                "fYJ4fImHk32Ae3d+fIOJfX59eYF3bXd5h4uDhX5+eoSJjY59dnZ3goWLhnp6cHqAf3x/eX2Ci5x/\n" +
+                "eG95hIGMioh/enB4fYN/fYeIjHxya256goyMiYB2bHR+laCUi3FqbniLlI6OfXJzc3l5fnqKiYiE\n" +
+                "c3NyeXyFhIiJhYB8hH+Eg4SIfX57bG5yfISPk5J7bG10jZCXf3t4d4GEjY1/cG92g4Z/eXx5g4OD\n" +
+                "hYSCenuCkYeBgHd7eYCEhH+BfnmAdX6AeoB7jYZ8eHeEg42Eg310dXqBiYJ9iH6IgXh0b3qBiIyM\n" +
+                "fnVtb3uOnpWGc21yf46Uj4B2aHV8iYV/enmEh4yAgG9wcXmMj5aGeXN6fYKJhYV2fHt7dHF2fpKP\n" +
+                "koF2dXqIkJCIfXFufISJh312c3SFiYyIe3p6iISLfH1ucIWQmINxY2lvg4+VlIBvaXGCj5CIgXiF\n" +
+                "g4V+eHtyeX6TkI6Benp5goN+d3NweHmGhYWDfIWEhnt7gIiMjIyEem5vdoOOiYd6dHBvfoaFfHh1\n" +
+                "hoWQhH15eYmNmIN+dXp9gYKBeHBvcXyJkYl+c3V/h4yNg394foKNh4F2dIGJjYN0Z3FyjYuQhnl3\n" +
+                "dX95hHx/foCLiYSAdHJ1f4uPi4R4dXeAi4qEdXJ0hIySiHtydYKFhXp9dXt8hIeDfHR2doiGkI6F\n" +
+                "fnR8g4yFe3VyfISIhn15eX2BgX16eoKAh4GCgoCFfYN+hIKBfn6Bg310cXSChpGMgnVseISNj4R4\n" +
+                "c3eEj4qGeXFyeYmPjXx2cXiFh4eAd3Z+fImHiYN1d3eEiIaAdXV6gImFhoB/goaIgX58eXx9g4N+\n" +
+                "enl5eYB+h4SDf31+gIB5e3uEjI2Gf3l3gYaOjHx3cnaAhoN8dnN8fImNhXt0d4CLkpODd25xeIOL\n" +
+                "i4R7d3h/fn14d3yDh4qGgYF/g399en6Cg4qEgX11enuDioaDgXl2eYCHgH16d3uCi4Z+dXd7goyL\n" +
+                "iH54cnh5hoyLh3p4e3+Ag35/en6ChH15eHuChIiHh4WDfX18fnt8gYOEf356eXyEhYqDf3d1eYGI\n" +
+                "hYJ5eXl+f4F/f36BhIqLhXx2d3l/hYiEgHt8f4OBfXR2eoCKiId/e3l6fYSGiIOCgICBfn99fX6A\n" +
+                "gYGBfHV3fYGEh4WAd3p/gIB+hoWIg4B5d3h6gIOLioN6dnd9foOEhH97fn+Df318fYKEhISBgX5+\n" +
+                "fYF+f3t8gIGEgIB8fnyBgoWFfnx8gYKCf3p6fn2Afn5+foCBg4aIgH17e36AhYaBgn+AfHx6enl8\n" +
+                "hISHfn56en6DiIiIg4F8e3+CgoJ6enp5fXyBgIKDgX16fXyBg4aFgH9/fX19fX+EhYaCgYF/fHt7\n" +
+                "e4F/g3x+fX5/f4SAfXuAhIqGhYF/gX5+fXx8e3t8f4ODgHx9fX2Ag4aFgHx7foKDgX9+f4CAgICB\n" +
+                "g4F/fn18fH+Dg4OBgH15fH2Dg4N+eXx8gICChH9/foKCgH+AgoOBf4CAgHt7fH9/f4CAgX9/fH5/\n" +
+                "goOEhIGAf319gIOEgH9+fHp8gISBgXx+fH1/foCAgn9/fIB+gIGFhYSBfn5/gn+BgIF/fH19gIF/\n" +
+                "fnt9foCEgoJ+gICAgYB+foCCgoCAfoB9fXx+gICAfoGAgn9/f35/gIF/fnt8f4GEhISDgH1+f4CC\n" +
+                "gIB+fX9+fn5/gX19f4GCf39/gICBf318fH6BhISDgYB/f4CAf4B9f31+gH+AfX5+gICBgIKBf3x7\n" +
+                "foCDgoOBgIB/f4KCgoB+f31+gIKAfnp8fH6BgIF/f39+gYSCg35/f4GCgn9+fX1/gIJ9fXt+gIKE\n" +
+                "goB/fXt+gIODf318f4GDgoGBfoCAg4KAfn+Af319fn5/fX9+foCBgoKAgIB9fX2Ag4WFgoB7fH1/\n" +
+                "gIKBf35+f39/f399f36AgYOCgH5+f4CBgH+AgYCCf4B9f4KCgYF/fn17fn6BgYB+fX6AgoCBf4GA\n" +
+                "goB/fn6CgIGAfn9+f39/gH9/fH6BhIOAfnx+f4KDhIB+fH1/goOCf35/f4CBgIB+foB+f31+fn5/\n" +
+                "gIKBgYB+foGBgX9+foCAgoKCf31+fYCBg4KAfn19fn5+f4CAgICAgH9+fn+Ag4GBfn1+f4CAgH9/\n" +
+                "gIGCgX59fH+BgoF+fX1/f4CAgYCAf4CBgYF+f4CCgoB+fHx9gIKCgX1+fX+BgYJ+fn+AgYKCgoB+\n" +
+                "fX2AgYGAgIF/f35+gH+AgYCAf35+fn+BgYGAf3+AgIB/gH9/f4GBgYB+fn1/gIGBgH9+fn5/gICA\n" +
+                "f39/gYGAf31/gYKCf358fH+Cg4F+fX1+gIKCgX99fn6BgoF/fX1+gIGCgoB+fX6BgYGBf4CAf359\n" +
+                "f4CAgH9+fn9/gICAgH9/f3+AgYGBf35/gIGCgYB9fH1+gIGBgoGAf39+fn5+gIB/gIGBgH5+f4CB\n" +
+                "gYCAgICAf35+fn+AgYCAfn5/f4GBgoB/fn9/gICAgH+AgIB/f39+f4CBgH9/f3+AgYB/fX5/gIKC\n" +
+                "gH59fX+Bg4KBgH5+foCAgX9+fn9/f4CBgH9/f39/f4CAgICAgH9+f4CAf4CAgH9/gH9/f35+f4CB\n" +
+                "goGBf31+f4CAf3+AgIGAgH5+fn6AgIGAf39+f4GBgX9+fn+AgYGAf35+f4CAgH9+f3+BgYCAgH5+\n" +
+                "fn9/f4B/gIB/gH9/f4GBgH9/gICAgIB/fn5/f4CBgIB/fn8A\n"
+
+            const bangString = "UklGRnYvAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVEvAAB/f4CAgH5/f36BgIB/\n" +
+                "fX9/gICAgX6Afn+Bf4GAgYB9f36BgYCAfn1/gYCAfYB/fn+AgH+AfoB+f39/gH9+goB+fn9/f39/\n" +
+                "gH2De5SJlKacXoGeVrZbsrFysIfakbGIgqB/mJnIqKqomqiJq76itLWzpJuJvp+dr5W4kaSjoJlU\n" +
+                "bJp6eXuFZX9OdpdXjldXWkxSfWhloIBLTk1kbXNbk5xiamGBTp1jZJOTnVJibWCDi2B3d2hijl6T\n" +
+                "f4JUbNtglJaTkG1kj5JinY2Fnn6hi1KWj6KRcIqdxHJwhciWcJJIs5FXf5J3MkuBbWaAcF6EcnSk\n" +
+                "oolTjEw3c2GPTXiKYH9Je3WVoo91bYQ7a35uU4ugkM3KmVpdczUySTo9P1lISGLYrJnoyNPL07F+\n" +
+                "UXKGZ2Ggu7ne1rzL8+zRt7Oz2czDqFZQSW2YbjdQPTZbSnJBS09nnINxPH5FNXM3Nj09Pk6iqFOn\n" +
+                "uJSjeISUXjgnSYJUm7ulqbjBxLypmJullLixXz6MZ3tbTEcpRkFMZ9N7UFI0JiRRWD0uQB5DNUVN\n" +
+                "WZmFqb65p6GMoZtqnHlIgX6ksrnChKO0f6fd3tumtbLXwbDFx7m0v4mgvMyLemBYb088WFhjclGU\n" +
+                "iJhkSH14jJWkdURYaDw7UWJDeK+ekY58eJKIyZ6Ol2doqKNgVjpIQ0BWNTRONTlQdGFupYqsyrma\n" +
+                "gXyKqlpaYENJPWt6dJR9aa59apK3s4J9lYVkmneUlny+xaqzysi2pLd4bYBhQ3+ibniftrTSr6fQ\n" +
+                "xbq/sa94cHh8iWeVn7p+aa2Rhp2wp5aAhpm0qLiQdb6voH5ugZZ/b3GAmby3nL5yUm1wQThUN0A+\n" +
+                "I0h9fmCbt6XPv9STrad0iFpxgJyenY6Toaygq8akmae5qo2OpIpfn4xhg11nWmBlf3N4b3awg5Fp\n" +
+                "gXdSe1NERkg/PTwnRjIkMiNJMi5ZS2Fvf5KDhK2utcWuuarE1M/Iytq1xsDCur7Ru9rB08/f5sTR\n" +
+                "x866y6OwpYSxusbgsnOpn8Gbb7J+iZOlsEhrh0Zkalpgckdlno2UdIp4SkhieoV1iZBTXXh8Ym93\n" +
+                "bmlGN1pIOTQrPjlEaGJNiqudf4mNsNbKwbqyrbOehrN1LVdHOU+UYlhhdJZ8nrKndKWlmKCkzoeF\n" +
+                "h29bTFtRXYiVOGx+VGlGTUxJXlI2RkNBRz80TVk9VFFRV4CRZoGIeIaWlJqXoaq3tMDDu7esw6uc\n" +
+                "oaunjn6hk3aQfoV6iKeXopWop6+0oImJm3d8cHBsZFtQTEhFNh9SUy09MkxQT0hiZGJjUlBFQkxK\n" +
+                "ZXh9soKLkpqpl8uLb6B9fHxrUmJ8Zkxec0d5UFV6U2pumIKIrpGjtbu2vr6psK23vqTMu1yCe4mP\n" +
+                "mq99qqKawrqssrKBg4aEpbFlYbded5hzl6mBbqujkpiSl4dSaI5kS3KPh4VrRG2RcGaHYltnPllo\n" +
+                "XoVxW2BgfV6ImJW3wqOIm6zJrLbYrY6nnKK2oY2Lf4aIhXCYompnent8wa+Wl6WGtbuivKOelqay\n" +
+                "usPJlKWVmIt+d19zgZaWfoyPcY+Du6elo5i0jI1/n3ZzrYqgiXRJZmtJazZrUDN2f19qaXlzaXhw\n" +
+                "bXx3ao9vhHh/jo6Lp7Gpj3eCZHRmZFBEP1FlbV9xm3dvgGBvf5+YqMSqucC6hsChoZ2Ck3CIhIZo\n" +
+                "WlR1f3GPiI+EhFpjnZOFcZCcmYuWkqKMfZODoKygmoNzh2KliV6DflZzhmuQdY9wbmZciHyGg4as\n" +
+                "h3+Wm5+DgIVukq2Rs4hdZ2qLk5G0qaaEjZlmdJGwjV1fc25tYVplhKuXkbGgrKa/zpTP1rS3tLqr\n" +
+                "x7SrwpKorZCKn4SXsI16cW5dZ19sY2WGlo2biHd8lnVrdnaPfntLZox1b46Ge2iHcXKaeYCGhpaw\n" +
+                "gZKUj4xbSmZliHlJYVw/UYZvc36HeWV8g2RhUlJNWHByVmKAdJSkspyttr+vr52Wf2OKbox0aH6L\n" +
+                "kJ6mipisqZl5cIRpZHN1bXdDVl2CmVm6np6ulsSxrLDDmJHLpbedrauJtqe9orDMsJyOjJB/cnVr\n" +
+                "aVJKT0xKQlNRWFRYZVZZVHh6dX+AhHF2X2p8bHxgfYeLsZJ9jYeYr3eIj6WFcZh/l6GeoK6vy6Wa\n" +
+                "qZmqsYtxnoh9epB5dYV3h5CSlJJ6mpSfjYSalIeRvZ2XrpyxtJKXoaKEfIyofXuGbntzf4uLbGx4\n" +
+                "d2tqcYZ3aFlmY0BRW1lCUU9IUlJUdXx1lpWKl5CioJ2WlpSUgoSzfpV5k5x6j3R7anF3aGBjemxB\n" +
+                "ZF9pYlN+eoJ7iKGNYHGHoqd9k6OIcbCaoqaUuI2toZ21lqOup6CftqeRmrOwsZygo5ympKCGpK6r\n" +
+                "g36BdoJdW1l7gz9eU09eRWRndo97kYpulYSWjpOTgpmdr6Ccnq2vnoyQkINpa4SEknF5bFR0anN5\n" +
+                "X2SMWFmKd3SNnI+Pi4CKoKGie4CAfZZ7fYV4aY5sZYFggFpNaWBPVFtSWWdtX4Jui5ycuqaenKCQ\n" +
+                "nK+MgpmUj3qTe3N0gpdxjHmEhWuDk4hxcoeBdYFzbo9qiZWSloGdiY16mZdxdpmAhHiCnX2MbJ+i\n" +
+                "lomboJKdiYx+hpGPeHKGk4SOeHJ8Xm9vh5J+aWdwV3Zqbm9ZiG17Xm95UWl/iXGjinaAspKOrY+n\n" +
+                "ibSLnaeOpIWDbnh/inqNj1uApI6SlIqesY+XnZm9rZySraCPsLCsopemoZqoqKGalZB7jodve2Vy\n" +
+                "i4WPoJOQo5ZqfnWVkH+CUJCVZ3uhoJyHlJ6HkZaMfYp5iZN3c21ndo5wbX6Kk5OMa4KMj4imnIKP\n" +
+                "Z4SMoY+Pj3h5Yop2gZN2YmeLi6SclI2Bm5aji5ycgJObpLi7rKuWm5uhrriqlKqdi6SHm6qDpqSL\n" +
+                "mouKq5uXpJaYqaOHfKOQeXmScWaLcJJxmYeFqnWQjYp9gpF8c3h+iYh8c4GWaneekJmYqIB9lYem\n" +
+                "cnSghIKOnJWNjoN8hZ2Qe3N5cGVya3GZlYOapaqano+SooyQmn5lfIiAepV5aqGRkZyInp2NoLOv\n" +
+                "oZCYkpSdk5GRnox1gKqokYGli291eIRZdXpjVHR6cnh2eoeIb5KHg4WIoI+gqY+ThX93eXx6epeM\n" +
+                "Y3x6g4J6Zm9udHhziXpygXpeeX19c3SJfo9ycnxdZFZubV10cGpZZnVocpiVhoObinGHc2NgdmRl\n" +
+                "eWZvY16GemN1ZVNWZVpDVHFjUXSAbXV8dnx4gI+Ie4KGgnmId3eco5SPqICCgo2DkZmAhYuefp+J\n" +
+                "jo6Cg2dsa5ZzbYJ8eWqCcmBVcGpUY11xVlVOUFFBVGhpV1lVXGB5X15QS19VZE51dmWAdHuDfIWA\n" +
+                "em1/kHx+dpGKkpV6joyTe3twbnuAg3KOhZGEiIlzloZtjZZ3hoCaoIqPjo9+hoGChX+EgHeAgnR6\n" +
+                "gHh2d3dpa3lvXmF1bm56cWFaYXyFc3aAcXyGd25ufm6CgnaIf3Rpamh1b3dqYnp3eH1ta3VeeYhl\n" +
+                "bHJ0eoeBbW+CiY2DZH6CfYN/f4yLeYeek5GghpWQmaKKho+QeoeYmY59hYV7gXRue3uHkXiIgmtz\n" +
+                "doJ4e3dpenxiYm51b4OAeXV5jHSOeIiXjZOIjIefnI1ohqKWrqCRfoyWgYWDiZmSkZSOm5mRjpSN\n" +
+                "mox7hmKFhn19c5mlk5OdiYeKnpJ4ho+NfpWNgpOgjISYjXhrgYF8g4uWgYGSi4l4ho+GkImdkH+W\n" +
+                "laOSmKGTnp+ilpqTqJ2Hjpu0p6KfopiIjpmVk5ajmZ+dk6CIj6Cdi5qqk5OKl45wf3tzenVpent8\n" +
+                "fXeIhYV+fYeFhn19g4OKfpKKg5GHioOOeIeTf5qch3mYj4CKlI19p6OMnpyXoZqWmpycjZ+PdIN7\n" +
+                "j4d+goSRgIaTmY96iIKMlZOWgpWSkYOPl4+XiKGPjX+Jp46hnqufh4uBhnuBhoKFg3+Klpd9g6GT\n" +
+                "fXGHd3VyfHZicHmHfoF8enZxY1xxgX2EfHJteoJudXV/gXJodnFvb2BkaG5uZ214eHJufHqCf3R6\n" +
+                "fXt3eXqFi4OIf4uSgoKNkYZ/e4iHi46PpaaUi4+boaOVjJSJiIuGfXd6gYaKgnqGamV8YldueW54\n" +
+                "h4qFjp6ao6GQj4x9doGHgYB/d2x7cW96cXV9c2aDgWhmcWdgbHR+cWx1dXByh4d6amlxcHB+hHOD\n" +
+                "fHmBdXmMlYyJiYyFdXuAg4N5foaSinp5g3WBhHuDfoiHg3Z9eHN0ZG12b3R3e3d5gIyHdXt1jIOE\n" +
+                "jX6CgoaDenp4hnx0hYmSgIWKlZOFkJOLh5CTjIeEgZB2fod+j5ePiXpufnRscHtzdHZ8e3FmYXBw\n" +
+                "a2R2Z2RuXWpnaWdmdW14enN3e3NaZnqFgH2KfnqOioyDfIKFiYqcmIeRkpSSk56HiI+NhoiNio2P\n" +
+                "lIiMk4uHgoOHgoN/fXt1bF5xcGl1a3J7eXd9fXV2e39sdo52eIh1dXqDe3JrbXJrb2FuZWJjZXFt\n" +
+                "fnl5dHN1foJ7cnZ3Y35/hoaPioKQen51iH16inGJioqSnpuPjo+ckpigoZ2el5mSl5uQm42VkYiP\n" +
+                "kI2MiYN9iIuDjpiMgX1yfoGLhYKBe4WHiJ6UfYB2cnqGg4V+g4OAg4iVin6FfIKCd4B5d3h4a3WC\n" +
+                "e3VscXdrdYB4eoCIfoyQhH53fX+PgXh4c3hwcYCQjYiNlIeIf3x/d4J7g4qIfXiJemxvcmVibGtp\n" +
+                "YmRcZ3VrcnJqeIWBfnmBhYJ+enh8jY+PjI+TjYuUkpWgoZqboqOloaKVjJOXjYCIi46OkoiJk5Cb\n" +
+                "iIORkYRyf313gnp4eXh4cn6JioB/jIqGi5CUh5CNe4iOkIiNlIR7g4qKmaKXlJmkpZSfrKOcl4yP\n" +
+                "k5mZmqiem5mTmpiSkI+OloqCiIKNinl9fndzbm55e3x0en57gn6GdmZ5gIR+gI2UhYOSjIyFhoN6\n" +
+                "eoKGioOFkYeNlpiTkoyKg4SIhp+RkKKVkYiPj4yanI+OkIiSlI2NiYWOiIqOkJJ8hJKGf4N9hYF3\n" +
+                "cXWFdoiXjI6OgoaIj5GMiIOKh42KlI1+hIGCgIeHi5KHiY6Hg42WkYeFiYeKiYaJhoCDf3+GhoiC\n" +
+                "f4J9fH59hIOKhnyEhIGLk5CPjpCNjZKTmZOVkpGTipCZlZWUlJOUl42PgYKEg4h8h5GNh4CEkI1/\n" +
+                "goKAiIyJio+PjYWKjoyOjpCZk4h7b3p6eoWCfn19fnl5f4F3d317bmhpZnBsb3FucXRtcHpxbnF1\n" +
+                "b2xtZ214cm5ycXVsaXFxdXZrandoaWVve3BzdHtydG91eXl9end7gHh3dXh8gHN7e3p7entydnCA\n" +
+                "g3Z3fYh9end5fHN4dXNzdW9yb2xwYmNwfnFwdG56dnd0cnp7fn+Ae3x6hIV/hYB5bW5sZWpoW2Ny\n" +
+                "XWV1bGpscG5qanFpam5ueXuCgIGHeneBf4B5f4WDhndwd3R0e3R0cXiAdnZ8hoB9dHqFeHx9hYF+\n" +
+                "io6Qjo6Pko2Si4mJgYiLgXx5bWpjZGdsb29qZHFyd4NybHZ7eHZ1Z2BjaGFlcXh4c3l4gYF/enyI\n" +
+                "gX9+dXlzbnBtcnBvdHNufXRqenBxc3p1cnl6eHiChIV/g4iKkY6Ji46PioeVj4yhpJuYm5aNi5ea\n" +
+                "nJ+WmZaboZ2Ylpyen6Cek5OakpaYmpSHj4mGhH2Hg4qQfoWMhIGFiYKAhYOCi42EiYiRloqPjIuL\n" +
+                "ioqIiYuRjI+Qj46Njo2Cfn19gXp+fIF6eHd7eXF1cHJrbnN1dnRyd4SFg4uKhYJ8fn6IhYSKgoaL\n" +
+                "iImKiYqOhIGGjZCVoJqgqKekn5qdoaOXk6CXl5mTjYeHiIuFjouGi46Ljo2Jk5CKgIGEeneBgX97\n" +
+                "fH96fX19d3R3gYKEi4OIhH2DhoyEkpCLi4aKjJCJkoiSnZiYnJybnZmYkJyWjI2Mjo+TlJOUm5WT\n" +
+                "lYyJjpKQjZGRjpSYlpqYkJaQkpyPj5CMi4uJhYKJj5GRhoaMi4KAhYV9eH6CgH+BhoKFiYeMjoyL\n" +
+                "hoaJgoiGh5uYk5qUkY+QkoqLhYuTmJqSl5KTk4+UmZqTlZmTjZGTkpGSlpCTkISIiYGEiIGBhYaG\n" +
+                "iYmHgYqQjIyHjoaHjIuPiouMiYmMg4OMhYCKhH+Ggn+CiIiFhIF/g4B+g3qBiISHgIB9gIV/hISE\n" +
+                "iIaHhXx9hIJ8g3t7f318eX9/gnp8fH1+g4uFiISIhoWJiIV/fYGGenyDfn15fXx7fXl2enp0dXZ6\n" +
+                "eX98fYJ/f4OIhIN/enp7fIaFf3x+fXmAhoaAgoGGhn55fHt+fXl+gIeCfn53fH57cXuCenl2fnZ3\n" +
+                "eXt8fXl1end7e4B4dXx9gH6Chn94eXt7e3h+g4CCfn16dm9uc3Bsb3NydHh4dHd6dn55e359hnZz\n" +
+                "dXyCfYSBfHt6eHhydnt5f3+AhoWFgXmBf31+fHp+goKAgoaAgoKHhIKDhICAioaFgIN+fH98fnV4\n" +
+                "eXl7eod+eXx9goCDfH6BgYWAhYWAhIF4eH95dHR9fnJ5d3F1enZ3fX17e4F/g4KFf4OGfYN7fIKA\n" +
+                "e3l5eXyAgH2BgX14eHFvdnNzc3V4dnp7enl5d3Z+fX19f3x5fIF8en97eHl8eHh5eHd6e3x5en97\n" +
+                "fnt9foCDgX+AgYKEgH6HjYmKg4KDh4mBgH+Bfnp7gH6Ih3qEhIKGgIB8hoZ2fYKEhoiLioeDhYeI\n" +
+                "jIqIh4aGhoWDh4SEg39+f31+gYF+goiCgX57fXZ4e3R2enp4fHx8en6Ag4GAgHd8g4iEiIaFi4OC\n" +
+                "iIiIhIaKi4qHhICDfXx9f4mNh4KCi4mGi4yPkI+LiY2Pi4yHgYWCgIJ+gIGDhH5/fX6Bf358e32B\n" +
+                "fYSHh4h/hYaBhYaHf3+AenmBhIKCfYCGhYKKjoeOkJGSkZSTnJeUk5SVkpaWmJKVnpiTkJeXkJGK\n" +
+                "h4aFhoSBhIGAg4aMioWEh4WFhYaBf3pyeYF+enx8dnN3gH98hISEgn6AhH6BhYWJgIaNiouNlpeV\n" +
+                "k46MjIqMjYeEg4B9gIaBgIaAhIyGiY+Mjo6Pjo+PkJCPjI+UjZGVmZmUlJOQjI+PjIyLi4mHjYuI\n" +
+                "ioiFgoWAfX17gYB8fXx8f3l4d3Z2dXl7fYODf4J+dnp8e399e316dXh+fnp/gYWFhIh/e36Cg4eH\n" +
+                "iIWBh4aKiYmLjIyMjo2LiYeFgn19gH97enp3e4GAfX9/d3p+e3uBgH19fn19f3uBf4CBf4GDgH58\n" +
+                "enuAgX18eHl8eXR5dXV6d318fn92fIGAfnx8fnh2eHp7eXx5eXp6en15dnh1d3V1d3R6eXV0eHt7\n" +
+                "eXqAgIGCf3t5f4F7fH1/f32AhIaFfoCIgYB+gH58e3x6eX1/hoB7fYCCf4GCfXp7fYWGgomJiIWE\n" +
+                "fnyDfXx6foB+hIF9fX9/f3yBf318e357fX1/fX55fIN/enZ2eHVvdHBsa3BzdHR2d3d8fYF+fH99\n" +
+                "e3x8f359gIKGg315d3Z3eXZ8fn15dXh2enl2eH17en99e3t6eXh6dXd+fX5+fHhzeXp1d3d3e3h4\n" +
+                "e3l2eHh3eHmAfn+AfHuBfoCFi4uHhH+EhIB/gHp6fH57dHl4dnl4eXp7fXt3fHh0eHV0d3NxdXV4\n" +
+                "enx8e317foB8e3t4gX97eXZ+enh7e3t+fXt7e4B+e3d3c3h8fHh0eHh2c3V5fHt8eXNyeHt5eXl7\n" +
+                "fX19end4cXB0dXNzdXh7eICDgYGEiIGBhIODg4eNjIuLh4SFhYKChYSCf3x7fH5+gH96fXp2d3V0\n" +
+                "cnJubHBzdXZ6fHh3fX9/fXp1c3VydHZ6eHV8fnh0d3uChIWIhYKCgYOCf4KAf4CChIWHjpCMjIyM\n" +
+                "i4iDhIKGiIWJhoWEhoyJhoiHhYOEhYKDiIWDg4ODgH98d3+Df4GFjI6KjImKiYmKiYiEg4OBgoaF\n" +
+                "iIqKi4qLioaIjYmGhoF9fYB7dnt5fXx9gICDhoV9f35/f35/fX5+fX1/fn+BgoB9gYB/hH+AgYCC\n" +
+                "gHx8gX97f31+gICBf35/f4CBfH+BfHl3d3l7fn6Dg36CgH6CgH+BgoSBf4OAfn5/gYGEhIKDgYOD\n" +
+                "f4CCgoOEgYB+goSAg4F+f4B9fH59en6AfXx8fH1+fH+Cg4SGiYiEhYaCgYCBgoWJhoeHiYmIioyK\n" +
+                "i4uIi4yJhoeEg359e3d5dnl9foKBf3+Dgn5+gX18g4GAgn98fn17ent7e3x+fn+BgISEgoCAfHl4\n" +
+                "d3N4eXh8eXZyc3VybXFwbW9ranV0cXVydnl8fX+Cf4B/fHp+gXp2dHZycnJzd3Z0d318fH9/fHp7\n" +
+                "fHt8e3p5eXt8fYCAe3x9fXt8fnt5d3p+fH2AgYCBg4GCf4GDfn+Bf4CAgYKEh4eGiIeCgYGAf3x+\n" +
+                "f3+BgYGEiIWHiYiGhoeDgoWFhIGCgYB/f4KAgoGBg4WBgIWDhIeGh4OBgICEgoB+fX19end5enl4\n" +
+                "enl6e3x7ent6enh6e3x9dnh4dnh8enx+fHp5e3p7eXh5enVzdHR0c3NycnNycHNzc3NycXR7eHd3\n" +
+                "dXh7e3l6fXt6enp3d3p6e3Z1dnV3dnl7foB9foKCg4eHhIWDg4SChIeIhoKDiIaEhYaFgoWDgX97\n" +
+                "fHp6eXuAfHl6fHt8fX+Bf4OCgYCDgoB/fH9+fXx9g4OFhYGBgoGEhIODhoiGhoiJg4OCgoOAgYCD\n" +
+                "hH98fn9+fX2Afn18ent6e3t5eXt9gH9+f3+AgIGAgoSEgYCDg4SEhIODgYCEg39+fnx6enp6fX58\n" +
+                "f4CBgYOHhoeJiIeFhoKDhoaFg4aEg4SDgX9+f35+fXx9e3t8fX1/fnp6e31/f4CBhIWHh4SDgYGB\n" +
+                "gICAgYOAfnx8fHt7eHd4dnZ4eXd3e3l5eXt7gH54fHx5dnl5e3p4e3x+f4GBfn+AenuDgoWGhYSD\n" +
+                "iIeIh4iJh4iHiIaGhoWGhoWGhIKFhIWGiYmHiIaHiYaHhIGCh4aFhoSHh4iGhIODgYB/fn58foB+\n" +
+                "foGDgoCCgoSGhYCAhISEhIaEf35+hISCg4GBgoSDhIGAf359f4F/gICCgYGAf39+f358e3t7e4CA\n" +
+                "fYCAfn19e31/fn99fX1+fXp+f398fX17f319gYWJiIqKioqHh4R/fn18fX15eXd4enl6enx7fX57\n" +
+                "fX57fn1/gX5+e39+fH9/gH9/fn9/f399fHl4eXh6e3uAfoCAgH+Ag4KCf4CCgoCAgoGBgHx8fH19\n" +
+                "gIB9fH59fXx7fX58enp4e319gIKAgoSCf4CDf39/fn9+fH1+f398e32AfXx/fnx6fn59f31+gYKF\n" +
+                "h4aFg4SDgoODgoF/f31/gYB9e3x6en1/gYB+gYGBgYCAgoGBg4OBfnt7eXh6enp8e3t7fX58enx9\n" +
+                "fH5/goCCh4GAgYWFhIKCgoKCgIGBgoGAgoKBg4SDf4SCgoaDhH98fX59fHp7eHV5eHl8enl+fn+A\n" +
+                "gYOBf3t+f3x9fHt5eXh5fXt9f3+AgoV/gIJ/fXt5dXR6e3t+fX+AgX57f4GAf4F/gH9+fXx7fIB+\n" +
+                "fX5/f3+BgYGCf4F/f4GAgYGBgYCChYeJiomIiIeDgYCBf359fX5+gYGCgYOFhIWEg4J/foB/gYF+\n" +
+                "f399fX+CgYCAfn+Ag4WGiIaFhYSEhIODgYCCgYKGhoeIh4SBgoGCg4OEgXx8fXx+gIB+fn9+enp6\n" +
+                "dXh2c3V0d3t7fYKBf35+fn6AgHx6eXh4eXp8gYGChIKEhYWFhYaEhISEg4OGhIOFgoGCgYB9fYCC\n" +
+                "gYKFhYWFhoN/goGBgYCCg4SEg4KAgYKDgoWHhYaCgoSEhIOGiIaHiIaDhIODg4CBhIaFh4aGhoaI\n" +
+                "h4eHhoeKioqKiIeGhoOCgoGCg4OCgYCAg4SEgoOBgIGCgICBf4GBgH5+f4CCgoOEg4KCgYGAgYGA\n" +
+                "gX99fHl4d3R4eXd7fHx+fn+AgICAfn5/f31/gIGAf39+f3+BgoB/gYB/gX9+fHp7fX6BhISEgoCA\n" +
+                "f4B/f35+gX+BgoSFhoaDhIaIhYOCgoF8e318eXt+f4GBgIKEgoKDhIOCgoKCgoODgX9+f39/gIB+\n" +
+                "fX17fXt6e3x9fHx9fn1+f3x9fHp9fn98fH6AgoGAgIB+gH99fX1+f4CBgoGAf31/f357fIB+fX+A\n" +
+                "gYGBhISDhIF9e3x7eXl6eXl5enp9gIGAgICAgYCBf35+eXp7ent8enp8fHx9f399foCBgH5/gYB/\n" +
+                "gH+Bg4KBg4SDhYaEg4KDhIKCgIF/gIKCgYB/fnt5fHl4eXp5eXl5enp5eHp6eHd4eXp7fX1/gH+A\n" +
+                "gH9/fXp6e3t5enp7fX6Bg4ODhIKAgICAfXx8enh4enp7fX9+fHt8e3p7fX5+f4GCgYJ/f4GAfX2B\n" +
+                "gX58fHx+gH9/gIB/fn1+foB+fH1+fn+AgICAf4B/f3+Afn6Af359f39+f4B/gH9+fX19enl3dXh5\n" +
+                "eH1+fXx8fH59fn19f3+AgIGAf4CBgH+AgICAf319fX1+fX+AfX1/gX99foKDgoGDg4OAfn19fn6B\n" +
+                "gIGChIOAgoKEhoeFgoKDgYCBgoKEgoOFhYSEhYWFhoeHhYmKiYqLiYeGhoWDhIOCf3+Af4CBgYKB\n" +
+                "gYB+fn59e35/f35/gX6AgoOEg4SFhIKAgYOEgX+AgYB/goKAfn6AfoCCg4KDg4WGhoSDhISEgoKE\n" +
+                "hISGhYWFhYmLjo+NiYmKiomIh4eGhoeGhYmMi4qJh4aGhIKChoSDg4GCgYGDgoGAfYCAgoGBgoB/\n" +
+                "fn59fXx8fHt8e3x9f4CBgYKCg4WDhYWGhYWGhYaHhoaGhYeIh4mIioiHiIiHhoWEhIOCgH5/gIGC\n" +
+                "g4KCgoKCf4CBgoGBgYKCgYODgYCAgH9+f318fn59fX9+foCBgX9/f36Af36Af3+AgoKCgoB/fn1/\n" +
+                "gX99fXx8fn58fH19fX19fH+BgYKDgoOFhYaHhYaHhoaIh4WFg4KBfn+AgYGCgoKBgYGBgoGAgYCA\n" +
+                "gX+CgX9/fn9/gIGBgICAfn58fX19f4B/gH99fX5/gH+Ag4GCgoCBgYF8fHx8fXx/goGAf39+fnx8\n" +
+                "fX19fXx5enx8fYCAgICDhIWHh4aFhISFhIODgoB+fXp5eHd6e3x8e3t8fHx8fHx6enp5fH1/fn6A\n" +
+                "gYKCgYGBf31+fn18e3x7e3p6e3t8fX1+fXx8fH5+fX17enp6fHp6e3x9fn5+fn5+fn58fH5+fHx9\n" +
+                "fn6AgYGAgICAgYKDgYCAf4GCgYKCgYGBgoSCgIB+fn18fH58fHx8fXt7e3x9fX19fn99fn58fH19\n" +
+                "fnx6ent6ent8e3l8e3t9f39+f4B/fX5/fn5+fXt8fn19e3x7e3x8fn5/f39/gIKAf39+fHx9fnx9\n" +
+                "fn+BgH9/f359fn19fXt8fXx8fn58fH19fX18enp8fX1+fn19f39/gH9+fn+AgH+Af399fHx8enp9\n" +
+                "fn5+gYCAgYGCgYB+fn17fHx8e3x8e3t7e3x9fHp6e319fXt7e3p9fXx7enl7fn5/gH+AgIGBg4SE\n" +
+                "hYaGhoeFhISEgoGBgICCgoGAgICBgoKBf39/foCCg4KCgoKCgoOCgoF+fn9+fn+Bg4OCgYKCgoOC\n" +
+                "gYCBgH9+fn5/f39/gIB/fn5+fn9/gYF/gIGCgoODgYF/f3+AgIF/foCBgH9/f359fX59fX19f4B/\n" +
+                "gIGCgYKBgIB/fn6BgYGChIOEg4KCgYGAf39/f359fn59fX18fHp6fHx/fn+BgICAgIOEg4SEhIWF\n" +
+                "hoSCgYKDgYKDhYaGhYOCgoKAf4B+fn9/gIKDgoOFhYWEg4OCgYKCgYGBgICAgYKEhYODg4KBg4SE\n" +
+                "hIKChISDhISCgoGCgYKCgYGCgoGCgoKCgYGCgYGAgYKDg4KBgIGBgYKCgoKDgoGCg4OFhoWEgoOE\n" +
+                "g4OFhIOCg4KBgoKBg4SDg4KDg4OEg4SEg4SFhYSDgYCAgIGBgICBgoOEhYWFg4ODg4OCgoOEg4OE\n" +
+                "hYWEhYaGhYSDg4ODg4KCgYCAgoKDhIWEgoGAgYCAf318fH1+fn59fX6BgoOFhoaGhoWFhISEhIKC\n" +
+                "goOEhIODg4KBgICBgYGBgICBgYGCgoGAf39/f35+fn5/gYKEg4GAf3+AgH5+f39+fX18fH19fn6A\n" +
+                "gH9/f4CBgoOEhIOCgoGBgYGCg4SEhYaFhYWFhISEg4ODhIKCgoKDg4OCgYCAgYCAgH9+fn59fn9+\n" +
+                "fn5+f39/f4GBgoGAfn5+fn18fX+Afn5/gYKDg4ODg4OCgICAf358e3x8fXx7fX1+fn+AgIB/f4CA\n" +
+                "gICBgICBgYF/f4CAgYF/fn5+gICBgIGDgoKBgH5+fn18fHx7eXl7fX19fn+AgoKBgX9+fX5/fn18\n" +
+                "e3p6eXl4eXl5eXp6enx+fn5/f35+f4CAf35+f39/f4CBgYGBgYKBgH9+fXx8e3x9fH6AgICBgIGC\n" +
+                "g4KCgoGBgH+AgH9+fXx9fX1+fHx8fH18fHt7fHt7e3x8fHx8fn19fn9+fXx7fH1+fXx8fHt8fHx9\n" +
+                "fn59fX59fXx8fX5/fn1+fn+Af39/gICBgYCAf31+f4CBgIB/f39+fX5/f39/foCCgoKDg4KCgYGB\n" +
+                "gYB/f35+fXx9fX5+fX17enp7e3t8fX+Afn5+fnx8fX17fHx8fHx8fHx+fn+AgYGCgYB/f4GBgYB+\n" +
+                "f359enp7fHx9fX+Bf39/fX1+f39/gYGBgYGAgH9/fn+Af39+fX5+f4CCg4KBgYB/gIB/f3+AgIGC\n" +
+                "goOFhYODhIOBgH99fXx8fX5/f35/gYKCgoGBgYGAfn19fn18fH1/gYKEhYWEhIOCgoGCgYGBgYKD\n" +
+                "gYB/f3+AgoODhISEhISDg4SCgH9/fn9/foCAf36AgYGBgoKCgX9/f39/fn5+fX5+foCAgH+Af39/\n" +
+                "f35+fnx8fHt8fX6AgYGBgYCAf39+fHt6ent9fX1+fX19fn+AgICBgICAgYOEhIOCgoKBgYB/f3+A\n" +
+                "goKCgoGBgYCAf39+fn9/fn5/f3+AgYGBgH9/gICAf3+AgICAgICAgYGBgYKBgIB+fn5+fn9/f35+\n" +
+                "fX1/gYOEhIODg4KCgoGBgICBgYGAgH5+f4CChIOAgYGCgoKCg4OCg4KCgoGCgX9/f4CBgoKBgYCA\n" +
+                "f39/gICAgYCAf39/gICBgYCAgIGBgYGAgICAfn9+fn5+f4CCgoKBgoGAf359fX19fn19f4GBgYKB\n" +
+                "gYB/f4B/f39/fn+AgIB/f39/fn1+fn+AgICAgoKCgoGBgICAf35/f319f3+AgICAgIB/fX18fX5+\n" +
+                "fXx8fHx8fn+AgYGBf35+fn9/f3+AgICAf39/fn18fHx8e3p6e3x8fHx8fX19fX19fX5+f39/f319\n" +
+                "fXx9fX5/f39+fn5+fX1/f3+AgYCBgH9/f35+fn19f4CAf39/f3+AgIGBgYGBgYGCgYCAgH9/f3+B\n" +
+                "gYB/fn5+f4CBgoF/f39+fn18fH18fH19fXx7enl6e3t9fn5/fn5+fnx7e3x9fn9/gICAf4CAgYGC\n" +
+                "gYGAfn19fX5/f3+Af35+f39/gIB/f39/gICAf4CBgYGAgH5+fn19fX5/fn9/fn+Af4CAgYB/f4CA\n" +
+                "gIGBgYCAgICAgIGBgYCAgH+AgYKCgoKCgoCAgIB/f319fn5+fn+Af39/gICAgICBgICAgICAf39+\n" +
+                "f39/f4CAgICAgIB/f39+fn5+fn59fX19fX19fn5+fn5+f4B/fn19fX19fXx8fHx8fHx8fXx8fH19\n" +
+                "fX5/gH+Af4CAgICBg4ODgoKCgoKDgoKAf39/f35/f3+BgoKDg4KCgYCAgH99fXx9fX1+f4CBgoKD\n" +
+                "g4OCgICAgIGBgIB/fXt7e3t8fX5+fn+AgYGBgYGBgYGBgYGBgIGBgoOCgoKBgH9+fn18e3x8fH19\n" +
+                "fX19fX19fn5+fX5/f39+fn59fHx7enp7fH1+gH+AgH9+fX19fX19fn+AgICAgIGCg4OCgoKAfn19\n" +
+                "fHx7e3t7e3x8fX19fn9/f4CBgYF/f39/gIGBgYKDg4SDg4SDgoKCgICAf39+fn9/gIGCgoKCgoKD\n" +
+                "goGBf359fX1+f3+AgICBgYGBgH9/f39+fn5/gICAgYCAgYGBgYGBgH9+fn9/f39+fn5+fXx8fH19\n" +
+                "fX19fn5+fXx9fn19fXx7e3t7ent9foCBgYCAf39/f35/fn19fX+AgICAgICAf35/f4CAgH59fHt7\n" +
+                "fHx9fX19fX19fX5/f3+Af39/f4CAgYCBgoODg4OCgoGBgH+AgICAgIGBgYCAf39/f3+AgICAgIKD\n" +
+                "goKCgoB/f4CAgYGBgYGAgIGBgYGCgoKCgYGBgICAgICBgoKCgoF/fn1+f4CAf3+AgICAf39+fn5+\n" +
+                "fn59fHx8fHx8fH1+fn9/f4CAgIB/f39/f39/f39/gH9/gH9/f4CAgIB/f39/f39/f35/f39/f35+\n" +
+                "f35+f39/f39/f317enp7fHt7e3x9fX5+f4GBgYCBgoGAf35+fXx9fX5/f3+AgYGBgYGAgYF/f359\n" +
+                "fX19fn9/gIGBgYGCgYKCgICAfn5+f35+f39/f359fXx7e3p7fHx9fX19fHx8fH19fX19fn5/gIGD\n" +
+                "g4OCgYGBgH9+fn19fn5/f4CAgYGBgYB/fn5+fn5/f4CAgYGBgYGAgH9+f35+fXx8fH19fX9+f3+A\n" +
+                "gICAf39/f39+fn9/f39+fn19fXx9fX18fHx9fX19fX19fX19fX19fX19fX18fH1+fn1+fn9/gH9/\n" +
+                "f4CAgH9/fn59fn5+fX19fX5+fn9/f3+AgYGBgYGAgIB/fn5+fX1+f35/f3+AgIGCg4ODg4OCgoKC\n" +
+                "gYCAf3+AgYGBgYGBgYGBgYCAgICAf35+fX18fHx8fX18fX19fn5/gIGBgYGBgYGBgYB/f4CAgICA\n" +
+                "f39/f39/f4B/gICAf39/f39/f39+f35+f39/f39/f39/gIGBgYB/fn5+fn5+fX5/fn18fHt7e3t8\n" +
+                "fH1+f3+AgICAgIGBgYGAf35+fn5+gIB/f39/f39/fn5+fX5+f3+AgH9+f39+f35+fn5/gIB/f35+\n" +
+                "fn5/gICAgICAgH+Af35+f39/gICBgYKCgoKDgoKBgIB/fn5+fX19fX1+fn5+f4CAgH9/f3+AgYGB\n" +
+                "gYB/f39/fn5+fn5+f39/gICAgICAgYGCgoGBgICAgYKCgoKBgIGAf39+fn5+fn19fH18fHx8fX5+\n" +
+                "f39+f3+AgH9/f4CAgYGBgoKDg4SFhYSDgoKBgYB+fXx7e3x8fX5/f4CBgYGAgH9/fn19fX1+fn5/\n" +
+                "f4B/f39/gICAgIGAf39/f3+Af35+fn5+f39/gICAgICBgYKCgYB/f35+fn+AgIB/fn5+fn19fX1+\n" +
+                "fn5+f4B/gICBgoKDg4ODg4KCgoGAgICBgYGCgoKBgYGBgH59fX19fHx8fX5+fn5+fn9+f4CBgYGC\n" +
+                "goKBgH9+fn5/gIGAf39+fn5+f3+AgYGCgoGBgYGCgoGBgICAgH9+fn5+f4CAgYGAgICAf4CAgICA\n" +
+                "f39/f35+fn5+fn5+fn5/f39/f4CAgICAf318fHt8fHx8fX5/gICAf35+f3+Af39+f35+fn19fH5/\n" +
+                "gIGBgYCAf39/gICAgH9/f39/gIGBgYGBgYGBgYGBgICBgoSFhYWFhIOCgYGBgH9/f39/gICAgH9+\n" +
+                "fn5+fn+AgICAgH9/f39/f39/gICBgYB/fn5+fn5+f39/gICAgYGBgYGBgYB/fn9/f39/f4CAgIGB\n" +
+                "gYCBgYKDgoGBgICAgIB/f359fX19fn5/f4CAgIGBgYGBgICAgIGBgoKBgICAf39/fn5+fn5+f3+A\n" +
+                "gICAgICAgICAgH9/f39/gICBgYGBgYGAgICAgICAgH9+fn19fHx7e3t8fHx9fX1+f39/fn9/gICA\n" +
+                "gIGBgIGBgYCAgIB/gH9+f39/f35+f3+AgYGBgoGCgoKBgYGAf39/f4CAgH9/f39/f4CBgYGAf35+\n" +
+                "fn59fHx8fHx8e3t7e3x9fn+AgYGBgH5+fX5+f3+AgH9/f35+fX5+f4CBgYCAgIB/f39/f3+AgIGB\n" +
+                "gIB/f35/f39/f39/f39/f39/gICAgIB/f39/gICAgYGAgIGAgH9+fX19fX5+fn5+f4CAgH9/f39/\n" +
+                "gIB/gICAgICAgH9/f39/f35+fn19fX59fn9/gICBgYGAf39/f35+fn+Af39+fn5/gIGBgoODg4OC\n" +
+                "goGBgICAgICAgICAgICAgAA=\n"
+
+            var pingSound = new Audio("data:audio/wav;base64," + pingSoundString);
+            var cubeEffectSound = new Audio("data:audio/wav;base64," + cubeEffectString);
+            var looseEffectSound = new Audio("data:audio/wav;base64," + looseEffectString);
+            var bangSound = new Audio("data:audio/wav;base64," + bangString);
+
+
+            const canvas = document.getElementById("game");
+            const context = canvas.getContext("2d");
+            context.font = '400px serif'
+            context.textAlign = "left";
+            context.textBaseline = "top";
+
+            const grid = 15;
+            const paddleHeight = grid * 5; // 80
+            const maxPaddleY = canvas.height - grid - paddleHeight;
+
+            var paddleSpeed = 7;
+            var initServeDirection = Math.random() < 0.5 ? -1 : 1;
+            const baseBallSpeed = 4 * initServeDirection;
+            var ballSpeed = baseBallSpeed;
+
+            let gameState = "ready";
+            let playerLeftScore = 0;
+            let playerRightScore = 0;
+            let countdown = 3;
+
+            var unsteady = false;
+            const cubeSpawnLength = 2000;
+            const cubeSpawnRandomTime = 2000;
+            const cubeDuration = 2000;
+            const cubeEffects = [
+                {
+                    type: 'ballSpeed',
+                    color: 'blue',
+                    duration: 500,
+                    emoji: '🚀',
+                },
+                {
+                    type: 'paddleSize',
+                    color: 'red',
+                    duration: 2000,
+                    emoji: '📏',
+                },
+                {
+                    type: 'reduceOpponentScore',
+                    color: 'green',
+                    duration: 2000,
+                    emoji: '🏆',
+                },
+                {
+                    type: 'unsteadyball',
+                    color: 'yellow',
+                    duration: 3000,
+                    emoji: '🫨'
+                },
+                {
+                    type: 'bomb',
+                    color: 'organge',
+                    duration: 1500,
+                    emoji: '💥',
+                },
+                {
+                    type: 'freezeBall',
+                    color: 'lightblue',
+                    duration: 3000,
+                    emoji: '❄️',
+                }
+            ]
+
+            const leftPaddle = {
+                // start in the middle of the game on the left side
+                x: grid * 2,
+                y: canvas.height / 2 - paddleHeight / 2,
+                width: grid,
+                height: paddleHeight,
+
+                // paddle velocity
+                dy: 0,
+                dx: 0,
+
+                visible: true,
+                type: 'left'
+            };
+            const rightPaddle = {
+                // start in the middle of the game on the right side
+                x: canvas.width - grid * 3,
+                y: canvas.height / 2 - paddleHeight / 2,
+                width: grid,
+                height: paddleHeight,
+
+                // paddle velocity
+                dy: 0,
+                dx: 0,
+
+                visible: true,
+                type: 'right'
+            };
+            const ball = {
+                // start in the middle of the game
+                x: canvas.width / 2,
+                y: canvas.height / 2,
+                width: grid,
+                height: grid,
+
+                // keep track of when need to reset the ball position
+                resetting: false,
+
+                // ball velocity (start going to the top-right corner)
+                dx: ballSpeed,
+                dy: -ballSpeed,
+
+                visible: true
+            };
+
+            const cube = {
+                // start in the middle of the game on the right side
+                x: 0,
+                y: 0,
+                width: grid * 2,
+                height: grid * 2,
+                color: 'red',
+                emoji: ' ',
+                type: 'smaller',
+                effectDuration: 2000,
+
+                visible: false,
+                timeout: null,
+            };
+
+            function changeBallSpeedEffect(owner, foe) {
+                ballSpeed = 2 * baseBallSpeed;
+                ball.dx = Math.sign(ball.dx) * ballSpeed;
+                ball.dy = Math.sign(ball.dy) * ballSpeed;
+                console.log("change ball speed");
+            }
+
+            function changePaddleSizeEffect(owner, foe) {
+                foe.height = Math.floor(paddleHeight / 2);
+            }
+
+            function reduceOpponentScoreEffect(owner, foe) {
+                if (foe.type === 'left') {
+                    playerLeftScore -= 1;
+                } else {
+                    playerRightScore -= 1;
+                }
+                document.getElementById("scoreboard").textContent = "🏆 " + playerLeftScore + " / " + playerRightScore + " 🏆";
+            }
+
+            function unsteadyBall(duration) {
+                unsteady = true;
+                setTimeout(() => {
+                    unsteady = false;
+                }, duration);
+            }
+
+            function bomb(duration) {
+                console.log("init bomb");
+                setTimeout(() => {
+                    console.log("BLAST");
+                    ball.dy = ball.dy * -1;
+                    bangSound.play();
+                }, duration);
+            }
+
+            function freezeBall(duration) {
+                // Store original velocities
+                const originalDx = ball.dx;
+                const originalDy = ball.dy;
+
+                // Freeze the ball
+                ball.dx = 0;
+                ball.dy = 0;
+
+                // Play freeze sound
+                // freezeSound.play();
+
+                // Visual indicator - could change ball color here
+                const originalBallColor = "white";
+                context.fillStyle = "lightblue";
+
+                setTimeout(() => {
+                    // Restore original velocities
+                    ball.dx = originalDx;
+                    ball.dy = originalDy;
+                    context.fillStyle = originalBallColor;
+                    // Play thaw sound
+                    // thawSound.play();
+                }, duration);
+            }
+
+            function spawnCube() {
+                console.log("Spawning cube");
+                cube.x = Math.floor(Math.random() * (canvas.width - 20) + 10);
+                cube.y = Math.floor(Math.random() * (canvas.height - 20) + 10);
+                cube.visible = true;
+
+                let effect = cubeEffects[Math.floor(Math.random() * cubeEffects.length)];
+                cube.type = effect.type;
+                cube.color = effect.color;
+                cube.emoji = effect.emoji;
+                cube.effectDuration = effect.duration;
+
+                cube.timeout = setTimeout(() => {
+                    cube.visible = false;
+                    setTimeout(() => {
+                        spawnCube();
+                    }, cubeSpawnRandomTime);
+                }, cubeDuration);
+            }
+
+            function resetCubeEffect() {
+                console.log("reset effects");
+                leftPaddle.height = paddleHeight
+                rightPaddle.height = paddleHeight
+                ballSpeed = baseBallSpeed;
+                ball.dx = ballSpeed * Math.sign(ball.dx);
+                ball.dy = ballSpeed * Math.sign(ball.dy);
+            }
+
+            function handleCubeHit(owner, foe) {
+                cubeEffectSound.play();
+                cube.visible = false;
+
+                switch (cube.type) {
+                    case 'ballSpeed':
+                        changeBallSpeedEffect(owner, foe);
+                        break;
+                    case 'paddleSize':
+                        changePaddleSizeEffect(owner, foe);
+                        break;
+                    case 'reduceOpponentScore':
+                        reduceOpponentScoreEffect(owner, foe);
+                        break;
+                    case 'unsteadyball':
+                        unsteadyBall(cube.effectDuration);
+                        break;
+                    case 'bomb':
+                        bomb(cube.effectDuration);
+                        break;
+                    case 'freezeBall':
+                        freezeBall(cube.effectDuration);
+                        break;
+                    default:
+                        break;
+                }
+
+                clearTimeout(cube.timeout);
+                setTimeout(() => {
+                    resetCubeEffect()
+
+                    // Spawn new
+                    setTimeout(() => {
+                        spawnCube();
+                    }, cubeSpawnRandomTime);
+
+                }, cubeSpawnLength);
+
+            }
+
+            function drawCube(cube) {
+                if (!cube.visible) {
+                    return
+                }
+                context.fillStyle = cube.color;
+                /*
+                context.fillRect(
+                    cube.x,
+                    cube.y,
+                    cube.width,
+                    cube.height,
+                );
+                 */
+                context.fillText(cube.emoji, cube.x, cube.y)
+            }
+
+            function drawPaddle(paddle) {
+                context.fillStyle = "white";
+                context.fillRect(
+                    paddle.x,
+                    paddle.y,
+                    paddle.width,
+                    paddle.height,
+                );
+            }
+
+            // check for collision between two objects using axis-aligned bounding box (AABB)
+            // @see https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
+            function collides(obj1, obj2) {
+                if (!obj1.visible || !obj2.visible) {
+                    console.log("one object not visible");
+                    return
+                }
+                return (
+                    obj1.x < obj2.x + obj2.width &&
+                    obj1.x + obj1.width > obj2.x &&
+                    obj1.y < obj2.y + obj2.height &&
+                    obj1.y + obj1.height > obj2.y
+                );
+            }
+
+            setTimeout(() => {
+                spawnCube();
+            }, cubeSpawnRandomTime);
+
+
+            // game loop
+            function loop() {
+                requestAnimationFrame(loop);
+                context.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (gameState === "ready") {
+                    context.font = "bold 24px verdana, sans-serif ";
+                    context.fillStyle = "#fff";
+                    context.fillText("Press SPACE to START", 225, 100);
+                } else if (gameState === "countdown") {
+                    context.font = "bold 24px verdana, sans-serif ";
+                    context.fillStyle = "#fff";
+                    context.fillText(countdown > 0 ? countdown : "START", countdown > 0 ? 375 : 340, 100);
+                } else if (gameState === "running") {
+                    // move paddles by their velocity
+                    leftPaddle.y += leftPaddle.dy;
+                    rightPaddle.y += rightPaddle.dy;
+
+                    leftPaddle.x += leftPaddle.dx;
+                    rightPaddle.x += rightPaddle.dx;
+
+                    const minLeftPaddleX = grid; // Minimum x position (left wall)
+                    const maxLeftPaddleX = canvas.width / 2 - leftPaddle.width - grid; // Maximum x position (middle of screen minus padding)
+
+                    const minRightPaddleX = canvas.width / 2 + grid;
+                    const maxRightPaddleX = canvas.width - grid - rightPaddle.width;
+
+                    if (leftPaddle.x < minLeftPaddleX) {
+                        leftPaddle.x = minLeftPaddleX;
+                    } else if (leftPaddle.x > maxLeftPaddleX) {
+                        leftPaddle.x = maxLeftPaddleX;
+                    }
+
+                    if (rightPaddle.x < minRightPaddleX) {
+                        rightPaddle.x = minRightPaddleX;
+                    } else if (rightPaddle.x > maxRightPaddleX) {
+                        rightPaddle.x = maxRightPaddleX
+                    }
+
+                    // prevent paddles from going through walls
+                    if (leftPaddle.y < grid) {
+                        leftPaddle.y = grid;
+                    } else if (leftPaddle.y > maxPaddleY) {
+                        leftPaddle.y = maxPaddleY;
+                    }
+
+                    if (rightPaddle.y < grid) {
+                        rightPaddle.y = grid;
+                    } else if (rightPaddle.y > maxPaddleY) {
+                        rightPaddle.y = maxPaddleY;
+                    }
+
+                    // draw paddles
+                    drawPaddle(leftPaddle);
+                    drawPaddle(rightPaddle);
+                    drawCube(cube);
+
+                    // move ball by its velocity
+                    ball.x += ball.dx;
+                    ball.y += ball.dy;
+                    if (unsteady) {
+                        ball.x += Math.floor(Math.random() * 16) - 8;
+                        ball.y += Math.floor(Math.random() * 16) - 8;
+                    }
+
+                    // prevent ball from going through walls by changing its velocity
+                    if (ball.y < grid) {
+                        ball.y = grid;
+                        ball.dy *= -1;
+                    } else if (ball.y + grid > canvas.height - grid) {
+                        ball.y = canvas.height - grid * 2;
+                        ball.dy *= -1;
+                    }
+
+                    // reset ball if it goes past paddle (but only if we haven't already done so)
+                    if ((ball.x < 0 || ball.x > canvas.width) && !ball.resetting) {
+                        ball.resetting = true;
+                        ball.x < 0 ? playerRightScore += 1 : playerLeftScore += 1;
+                        looseEffectSound.play();
+
+                        // give some time for the player to recover before launching the ball again
+                        setTimeout(() => {
+                            document.getElementById("scoreboard").textContent =  "🏆 " + playerLeftScore + " / " + playerRightScore +  " 🏆";
+                        }, 100);
+                        setTimeout(() => {
+                            ball.resetting = false;
+                            ball.x = canvas.width / 2;
+                            ball.y = canvas.height / 2;
+                        }, 400);
+                    }
+
+                    // check to see if ball collides with paddle. if they do change x velocity
+                    if (collides(ball, leftPaddle)) {
+                        pingSound.play();
+                        ball.dx *= -1;
+
+                        // move ball next to the paddle otherwise the collision will happen again
+                        // in the next frame
+                        ball.x = leftPaddle.x + leftPaddle.width;
+                    } else if (collides(ball, rightPaddle)) {
+                        pingSound.play();
+                        ball.dx *= -1;
+
+                        // move ball next to the paddle otherwise the collision will happen again
+                        // in the next frame
+                        ball.x = rightPaddle.x - ball.width;
+                    }
+                    if (collides(leftPaddle, cube)) {
+                        console.log("cube hit left");
+                        handleCubeHit(leftPaddle, rightPaddle);
+                    }
+                    if (collides(rightPaddle, cube)) {
+                        console.log("cube hit right");
+                        handleCubeHit(rightPaddle, leftPaddle);
+                    }
+
+
+                    // draw ball
+                    context.fillStyle = "white";
+                    context.fillRect(ball.x, ball.y, ball.width, ball.height);
+
+                    // draw walls
+                    context.fillStyle = "lightgrey";
+                    context.fillRect(0, 0, canvas.width, grid);
+                    context.fillRect(
+                        0,
+                        canvas.height - grid,
+                        canvas.width,
+                        canvas.height,
+                    );
+
+                    // draw dotted line down the middle
+                    for (let i = grid; i < canvas.height - grid; i += grid * 2) {
+                        context.fillRect(
+                            canvas.width / 2 - grid / 2,
+                            i,
+                            grid,
+                            grid,
+                        );
+                    }
+                }
+            }
+
+            // listen to keyboard events to move the paddles
+            document.addEventListener("keydown", function (e) {
+                // up arrow key
+                if (e.which === 38) {
+                    rightPaddle.dy = -paddleSpeed;
+                }
+                // down arrow key
+                else if (e.which === 40) {
+                    rightPaddle.dy = paddleSpeed;
+                }
+
+                // left arrow key
+                if (e.which === 37) {
+                    rightPaddle.dx = -paddleSpeed;
+                }
+
+                // right arrow key
+                if (e.which === 39) {
+                    rightPaddle.dx = paddleSpeed;
+                }
+
+                // w key
+                if (e.which === 87) {
+                    leftPaddle.dy = -paddleSpeed;
+                }
+                // s key
+                else if (e.which === 83) {
+                    leftPaddle.dy = paddleSpeed;
+                }
+
+                // a key
+                if (e.which === 65) {
+                    leftPaddle.dx = -paddleSpeed;
+                }
+
+                // d key
+                if (e.which === 68) {
+                    leftPaddle.dx = paddleSpeed;
+                }
+
+                // space key
+                else if (e.which === 32 && gameState === "ready") {
+                    gameState = "countdown";
+                    countdown = 3;
+                    const countdownInterval = setInterval(() => {
+                        if (countdown > 0) {
+                            countdown--;
+                        } else {
+                            clearInterval(countdownInterval);
+                            gameState = "running";
+                        }
+                    }, 1000);
+                }
+            });
+
+            // listen to keyboard events to stop the paddle if key is released
+            document.addEventListener("keyup", function (e) {
+                if (e.which === 38 || e.which === 40) {
+                    rightPaddle.dy = 0;
+                }
+
+                if (e.which === 83 || e.which === 87) {
+                    leftPaddle.dy = 0;
+                }
+
+                if (e.which === 65 || e.which === 68) {
+                    leftPaddle.dx = 0;
+                }
+
+                if (e.which === 37 || e.which === 39) {
+                    rightPaddle.dx = 0;
+                }
+            });
+
+            // start the game
+            requestAnimationFrame(loop);
+        </script>
+    </body>
+</html>
