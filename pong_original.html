@@ -1,84 +1,41 @@
 <!doctype html>
 <html>
     <head>
-    <title>No Longer Basic Pong HTML Game</title>
-    <meta charset="UTF-8" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Hanalei&family=Orbitron:wght@400..900&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-        font-family: Orbitron;
-      }
+        <title>Basic Pong HTML Game</title>
+        <meta charset="UTF-8" />
+        <style>
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+            }
 
-      body {
-        background: #333333;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-      }
-
-      h1 {
-        color: rgb(204, 255, 19);
-        font-family: Hanalei;
-        font-size: 8em;
-        margin: 0;
-        padding: 0 0 0.25em 0;
-        font-weight: 400;
-      }
-
-      .scoreboard {
-        position: absolute;
-        display: block;
-        background: #555555;
-        color: rgb(209, 229, 255);
-        font-size: 2em;
-        top: 1em;
-        left: 1em;
-        border-radius: 0.5em;
-        border: 0.125em solid #222222;
-        padding: 0.25em;
-        min-width: 3em;
-        text-align: center;
-      }
-
-      .scoreboard.right {
-        color: rgb(255, 209, 221);
-        left: auto;
-        right: 1em;
-      }
-
-      .scoreboard.time {
-        color: rgb(204, 255, 19);
-        left: 8em;
-        min-width: 4em;
-      }
-
-      .scoreboard.glow {
-        box-shadow: 0 0 1em yellow;
-      }
-
-      #game {
-        background: rgb(11, 85, 11);
-      }
-    </style>
-  </head>
+            body {
+                background: black;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            h1, h2 {
+                color: white;
+            }
+        </style>
+    </head>
     <body>
         <div>
-            <h1>Gnop</h1>
-            <span id="scoreboardleft" class="scoreboard left glow">0</span>
-            <span id="scoreboardright" class="scoreboard right">0</span>
-            <span id="scoreboardtime" class="scoreboard time">2:00</span>
+            <h1
+                style="
+                    font-family:
+                        Comic Sans MS,
+                        Comic Sans;
+                "
+            >
+                PONG
+            </h1>
+            <h2 id="scoreboard">0 / 0</h2>
         </div>
-        <canvas width="1200" height="650" id="game"></canvas>
+        <canvas width="750" height="585" id="game"></canvas>
         <script>
             let gameState = "ready";
             let playerLeftScore = 0;
@@ -92,13 +49,7 @@
 
             var paddleSpeed = 7;
             var initServeDirection = Math.random() < 0.5 ? -1 : 1;
-            var globalHits = 0;
-
-            const getSpeedIncrement = () => {
-                return (1 + globalHits / 10);
-            };
-            const initSpeed = 3 * initServeDirection;
-            let ballSpeed = initSpeed;
+            var ballSpeed = 3 * initServeDirection;
 
             const leftPaddle = {
                 // start in the middle of the game on the left side
@@ -132,7 +83,7 @@
 
                 // ball velocity (start going to the top-right corner)
                 dx: ballSpeed,
-                dy: -1 * ballSpeed,
+                dy: -ballSpeed,
             };
 
             // check for collision between two objects using axis-aligned bounding box (AABB)
@@ -177,25 +128,23 @@
                 }
 
                 // draw paddles
-                context.fillStyle = "rgb(209, 229, 255)";
+                context.fillStyle = "white";
                 context.fillRect(
                     leftPaddle.x,
                     leftPaddle.y,
                     leftPaddle.width,
                     leftPaddle.height,
                 );
-                context.fillStyle = "rgb(255, 209, 221)";
                 context.fillRect(
                     rightPaddle.x,
                     rightPaddle.y,
                     rightPaddle.width,
                     rightPaddle.height,
                 );
-                context.fillStyle = "white";
 
                 // move ball by its velocity
-                ball.x += ball.dx * getSpeedIncrement();
-                ball.y += ball.dy * getSpeedIncrement();
+                ball.x += ball.dx;
+                ball.y += ball.dy;
 
                 // prevent ball from going through walls by changing its velocity
                 if (ball.y < grid) {
@@ -208,16 +157,12 @@
 
                 // reset ball if it goes past paddle (but only if we haven't already done so)
                 if ((ball.x < 0 || ball.x > canvas.width) && !ball.resetting) {
-                    globalHits = 0;
                     ball.resetting = true;
                     ball.x < 0 ? playerRightScore += 1 : playerLeftScore += 1;
 
                     // give some time for the player to recover before launching the ball again
                     setTimeout(() => {
-                        document.getElementById("scoreboardleft").textContent =
-                            playerLeftScore;
-                        document.getElementById("scoreboardright").textContent =
-                            playerRightScore;
+                        document.getElementById("scoreboard").textContent = playerLeftScore + " / " +  playerRightScore;
                     }, 100);
                     setTimeout(() => {
                         ball.resetting = false;
@@ -228,14 +173,12 @@
 
                 // check to see if ball collides with paddle. if they do change x velocity
                 if (collides(ball, leftPaddle)) {
-                    globalHits += 1;
                     ball.dx *= -1;
 
                     // move ball next to the paddle otherwise the collision will happen again
                     // in the next frame
                     ball.x = leftPaddle.x + leftPaddle.width;
                 } else if (collides(ball, rightPaddle)) {
-                    globalHits += 1;
                     ball.dx *= -1;
 
                     // move ball next to the paddle otherwise the collision will happen again
